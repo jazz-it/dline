@@ -21,7 +21,7 @@ dcal() {
     color_past_dates="\033[1;34m"    # Light Blue
     color_today="\033[7;33;34m"      # Light Blue inverted
     color_future_dates=""            # Default terminal color
-    color_weekends="\033[1;35m"      # Magenta
+    color_weekends="\033[0;35m"      # Magenta
     color_deadline="\033[0;45m"      # Inverted Magenta
     color_current_month="\033[0;33m" # Yellow
     reset="\033[0m"                  # Reset color
