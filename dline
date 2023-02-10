@@ -27,8 +27,8 @@ echo "\
 
 # Error message
 error(){
-    echo "`dline`: invalid option -- '$1'";
-    echo "Try '`cmd` -h' for more information.";
+    echo "'`dline`: invalid option -- '$1'";
+    echo "Try '`dline` -h' for more information.";
     exit 1;
 }
 
@@ -58,8 +58,8 @@ done
 
 # Handle positional arguments
 if [ -n "$*" ]; then
-    echo "`cmd`: Extra arguments -- $*"
-    echo "Try '`cmd` -h' for more information."
+    echo "'`dline`: Extra arguments -- $*"
+    echo "Try '`dline` -h' for more information."
     exit 1
 fi
 
