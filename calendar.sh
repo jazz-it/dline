@@ -184,22 +184,22 @@ dcal() {
 
     # Arrays in zsh are indexed starting 1, unlike bash who index them starting 0
     if ! [[ $l0[0] ]]; then
-    min=1
-    max=12
+        min=1
+        max=12
     else
-    min=0
-    max=11
+        min=0
+        max=11
     month=$((month-1))
     fi
 
     # Print the calendar: list of months
     for ((i=${min}; i<=${max}; i++)); do
     if [[ $i -lt $month ]]; then
-        printf "$color1%s%4s$reset " "${l0[$i]}" ""
+        printf "$color_past_dates%s%4s$reset " "${l0[$i]}" ""
     elif [[ $i -eq $month ]]; then
-        printf "$color6%s%4s$reset " "${l0[$i]}" ""
+        printf "$color_current_month%s%4s$reset " "${l0[$i]}" ""
     else
-        printf "$color3%s%4s$reset " "${l0[$i]}" ""
+        printf "$color_future_dates%s%4s$reset " "${l0[$i]}" ""
     fi
     done
 
