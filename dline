@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+SCRIPTPATH="$(
+    cd -- "$(dirname "$0")" >/dev/null 2>&1
+    pwd -P
+)"
 source ${SCRIPTPATH}/calendar.sh
 
 # NOTE: This requires GNU getopt. On Mac OS X and FreeBSD, you have to install this
@@ -16,21 +19,21 @@ OPT=""
 opts="set"
 
 # Gets the command name without path
-cmd(){ echo `basename $0`; }
+cmd() { echo $(basename $0); }
 
 # Help command output
-usage(){
-echo "\
+usage() {
+    echo "\
 \`dline\` [OPTION...]
 -s, --set; Set a deadline
 " | column -t -s ";"
 }
 
 # Error message
-error(){
-    echo "'`dline`: invalid option -- '$1'";
-    echo "Try '`dline` -h' for more information.";
-    exit 1;
+error() {
+    echo "'$(dline): invalid option -- '$1'"
+    echo "Try '$(dline) -h' for more information."
+    exit 1
 }
 
 # There's two passes here. The first pass handles the long options and
@@ -40,27 +43,37 @@ error(){
 for pass in 1 2; do
     while [ -n "$1" ]; do
         case $1 in
-            --) shift; break;;
-            -*) case $1 in
-                -s|--set)      set_dcal && exit 0;;
-                --*)           error $1;;
-                -*)            if [ $pass -eq 1 ]; then ARGS="$ARGS $1";
-                               else error $1; fi;;
-                esac;;
-            *)  if [ $pass -eq 1 ]; then ARGS="$ARGS $1";
-                else error $1; fi;;
+        --)
+            shift
+            break
+            ;;
+        -*) case $1 in
+            -s | --set) set_dcal && exit 0 ;;
+            --*) error $1 ;;
+            -*) if [ $pass -eq 1 ]; then
+                ARGS="$ARGS $1"
+            else error $1; fi ;;
+            esac ;;
+        *) if [ $pass -eq 1 ]; then
+            ARGS="$ARGS $1"
+        else error $1; fi ;;
         esac
         shift
     done
-    if [ $pass -eq 1 ]; then ARGS=`getopt $opts $ARGS`
-        if [ $? != 0 ]; then usage; exit 2; fi; set -- $ARGS
+    if [ $pass -eq 1 ]; then
+        ARGS=$(getopt $opts $ARGS)
+        if [ $? != 0 ]; then
+            usage
+            exit 2
+        fi
+        set -- $ARGS
     fi
 done
 
 # Handle positional arguments
 if [ -n "$*" ]; then
-    echo "'`dline`: Extra arguments -- $*"
-    echo "Try '`dline` -h' for more information."
+    echo "'$(dline): Extra arguments -- $*"
+    echo "Try '$(dline) -h' for more information."
     exit 1
 fi
 
