@@ -33,6 +33,9 @@ dcal() {
     # List of all formatted dates of the current month, marked with proper colors
     l2_fmt=""
 
+    if [[ ! -e ${SCRIPTPATH}/.deadline ]]; then
+        touch ${SCRIPTPATH}/.deadline
+    fi
     end_date_input=$(head -n 1 ${SCRIPTPATH}/.deadline)
     if ! [[ $end_date_input =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]];then
         end_date_input="$((year+1))/01/01"
