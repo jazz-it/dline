@@ -8,9 +8,6 @@ source ${SCRIPTPATH}/calendar.sh
 # NOTE: This requires GNU getopt. On Mac OS X and FreeBSD, you have to install this
 # separately.
 
-use_color=true
-unset use_color safe_term match_lhs sh
-
 # Option defaults
 OPT=""
 
@@ -24,15 +21,15 @@ cmd() { echo $(basename $0); }
 # Help command output
 usage() {
     echo "\
-\`dline\` [OPTION...]
+`cmd` [OPTION...]
 -s, --set; Set a deadline
 " | column -t -s ";"
 }
 
 # Error message
 error() {
-    echo "'$(dline): invalid option -- '$1'"
-    echo "Try '$(dline) -h' for more information."
+    echo "`cmd`: invalid option -- '$1'"
+    echo "Try `cmd` -h' for more information."
     exit 1
 }
 
@@ -49,6 +46,7 @@ for pass in 1 2; do
             ;;
         -*) case $1 in
             -s | --set) set_dcal && exit 0 ;;
+            -h | --help) usage && exit 0 ;;
             --*) error $1 ;;
             -*) if [ $pass -eq 1 ]; then
                 ARGS="$ARGS $1"
@@ -72,8 +70,8 @@ done
 
 # Handle positional arguments
 if [ -n "$*" ]; then
-    echo "'$(dline): Extra arguments -- $*"
-    echo "Try '$(dline) -h' for more information."
+    echo "`cmd`: Extra arguments -- $*"
+    echo "Try `cmd` -h' for more information."
     exit 1
 fi
 

@@ -178,9 +178,9 @@ dcal() {
         else
             l1="${l1}${color_future_dates}${name_of_day:0:2}${reset} "
             if [ $i -lt 10 ]; then
-                l2_fmt="${l2_fmt} ${color_future_dates}${i}$reset "
+                l2_fmt="${l2_fmt} ${color_future_dates}${i}${reset} "
             else
-                l2_fmt="${l2_fmt}${color_future_dates}${i}$reset "
+                l2_fmt="${l2_fmt}${color_future_dates}${i}${reset} "
             fi
         fi
     done
@@ -198,11 +198,11 @@ dcal() {
     # Print the calendar: list of months
     for ((i = ${min}; i <= ${max}; i++)); do
         if [[ $i -lt $month ]]; then
-            printf "$color_past_dates%s%4s$reset " "${l0[$i]}" ""
+            printf "${color_past_dates}%s%4s${reset} " "${l0[$i]}" ""
         elif [[ $i -eq $month ]]; then
-            printf "$color_current_month%s%4s$reset " "${l0[$i]}" ""
+            printf "${color_current_month}%s%4s${reset} " "${l0[$i]}" ""
         else
-            printf "$color_future_dates%s%4s$reset " "${l0[$i]}" ""
+            printf "${color_future_dates}%s%4s${reset} " "${l0[$i]}" ""
         fi
     done
 
