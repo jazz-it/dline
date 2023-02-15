@@ -24,6 +24,7 @@ dcal() {
     color_weekends="\033[0;35m"      # Magenta
     color_deadline="\033[0;45m"      # Inverted Magenta
     color_current_month="\033[0;33m" # Yellow
+    color_line="\033[0;30m" # Yellow
     reset="\033[0m"                  # Reset color
 
     # Initialize the lists of the names of all 12 monts
@@ -134,7 +135,9 @@ dcal() {
     fi
 
     # Straight line
+    echo -ne "$color_line"
     printf '%.s─' $(seq 1 $(tput cols))
+    echo -e "$reset"
 
     # Loop over the days of the month and add their names to l1
     i=0
