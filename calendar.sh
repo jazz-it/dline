@@ -28,7 +28,7 @@ dcal() {
     reset="\033[0m"                  # Reset color
 
     # Initialize the lists of the names of all 12 monts
-    l0=("Jan" "Feb" "Mar" "Apr" "May" "Jun" "Jul" "Aug" "Sep" "Oct" "Nov" "Dec")
+    l0=()
     # List of all names of the days of the current month
     l1=""
 
@@ -46,6 +46,11 @@ dcal() {
     else
         end_date_formatted=$(date -d "$end_date_input" +%d.%m.%Y)
     fi
+
+    # Create a list with all the names of months
+    for m in {1..12}; do
+        l0+=("$(date -d "$m/1/2020" +%b)")
+    done
 
     # Get the current day of the year
     # day_of_year=$(date -d "$current_date" +%j)
