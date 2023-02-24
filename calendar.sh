@@ -144,81 +144,70 @@ dcal() {
     printf '%.s─' $(seq 1 $(tput cols))
     echo -e "$reset"
 
-    # Loop over the days of the month and add their names to l1
-    i=0
-    current_date_seconds=$(date -d "$current_date" +%s)
+    printf -v now '%(%s)T' -1
+    printf -v d '%(%-d)T' "$now"
+    printf -v h '%(%-H)T' "$now"
+    printf -v month '%(%-m)T' "$now"
+    printf -v month_zero '%02d' "$month"
+    printf -v currDate $(date +'%-d')
+    printf -v currYear $(date +'%Y')
 
-    for ((i = 1; i <= ${#l2[@]}; i++)); do
-        date_of_month="$year-$month-$(printf "%02d" "$i")"
-        iteration_date=$(date -d "$date_of_month" +"%Y/%m/%d")
-        iteration_date_seconds=$(date -d "$date_of_month" +%s)
-        name_of_day=$(date -d "$date_of_month" +"%a")
-        iteration_dow=$(date -d "$date_of_month" +%u)
+    s=$((now +(12-h)*3600 - (d-1) * 86400))
 
-        if [ $((10#${l2[1]} - 1)) -le $((10#$i)) ] && [ $((10#$i)) -lt $((10#$day)) ]; then
-            l1="${l1}${color_past_dates}${name_of_day:0:2}${reset} "
-            if [ $i -lt 10 ]; then
-                l2_fmt="${l2_fmt} ${color_past_dates}${i}${reset} "
-            else
-                l2_fmt="${l2_fmt}${color_past_dates}${i}${reset} "
-            fi
-        elif [[ "$iteration_date" == "$end_date_input" ]]; then
-            l1="${l1}${color_deadline}${name_of_day:0:2}${reset} "
-            if [ $i -lt 10 ]; then
-                l2_fmt="${l2_fmt} ${color_deadline}${i}${reset} "
-            else
-                l2_fmt="${l2_fmt}${color_deadline}${i}${reset} "
-            fi
-        elif [ $((10#$i)) -eq $((10#$day)) ]; then
-            l1="${l1}${color_today}${name_of_day:0:2}${reset} "
-            if [ $i -lt 10 ]; then
-                l2_fmt="${l2_fmt}${color_today} ${i}${reset} "
-            else
-                l2_fmt="${l2_fmt}${color_today}${i}${reset} "
-            fi
-        elif [[ $iteration_date_seconds -gt $current_date_seconds ]] && [[ $iteration_dow -gt 5 ]]; then
-            l1="${l1}${color_weekends}${name_of_day:0:2}${reset} "
-            if [ $i -lt 10 ]; then
-                l2_fmt="${l2_fmt} ${color_weekends}${i}${reset} "
-            else
-                l2_fmt="${l2_fmt}${color_weekends}${i}${reset} "
-            fi
+    l0= l1= l2=
+
+    weekend_days=$(cal | awk 'NF==7{print $1,$NF}')
+    weekend_days=${weekend_days//[![:alpha:]]}
+
+    while
+      for field in a d m; do printf -v "$field" "%(%-$field)T" "$s"; done
+      ((month == m))
+    do
+      if [[ $d -lt 13 ]]; then
+        if [[ $d -lt $month ]]; then
+            printf -v l0 "%s${color_past_dates}%-8s${reset}" "$l0" "$(date +%b -d ""$d/01/1980"")"
+        elif [[ $d -gt $month ]]; then
+            printf -v l0 '%s%-8s' "$l0" "$(date +%b -d ""$d/01/1980"")"
         else
-            l1="${l1}${color_future_dates}${name_of_day:0:2}${reset} "
-            if [ $i -lt 10 ]; then
-                l2_fmt="${l2_fmt} ${color_future_dates}${i}${reset} "
-            else
-                l2_fmt="${l2_fmt}${color_future_dates}${i}${reset} "
-            fi
+            printf -v l0 '%s\e[33m%-8s\e[m' "$l0" "$(date +%b -d ""$d/01/1980"")"
         fi
-    done
+      fi
 
-    # Arrays in zsh are indexed starting 1, unlike bash who index them starting 0
-    if ! [[ $l0[0] ]]; then
-        min=1
-        max=12
-    else
-        min=0
-        max=11
-        month=$((month - 1))
-    fi
+      (( ${#a} > 2 )) && a="${a:0:2}"
+      printf -v d_zero '%02d' "$d"
 
-    # Print the calendar: list of months
-    for ((i = ${min}; i <= ${max}; i++)); do
-        if [[ $i -lt $month ]]; then
-            printf "${color_past_dates}%s%4s${reset} " "${l0[$i]}" ""
-        elif [[ $i -eq $month ]]; then
-            printf "${color_current_month}%s%4s${reset} " "${l0[$i]}" ""
+      if [[ $d -lt $currDate ]]; then
+        printf -v l1 "%s${color_past_dates}%-2s${reset} " "$l1" "$a"
+        printf -v l2 "%s${color_past_dates}%+2s${reset} " "$l2" "$d"
+      elif [[ $d -gt $currDate ]]; then
+        if [[ "$weekend_days" == *"$a"* ]]; then
+          if [[ endDate_exists -eq 1 ]] && [[ $endDate == "$currYear/$month_zero/$d_zero" ]]; then
+            printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
+            printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
+          else
+            printf -v l1 "%s${color_weekends}%-2s${reset} " "$l1" "$a"
+            printf -v l2 "%s${color_weekends}%+2s${reset} " "$l2" "$d"
+          fi
+        elif [[ endDate_exists -eq 1 ]] && [[ $endDate == "$currYear/$month_zero/$d_zero" ]]; then
+          printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
+          printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
         else
-            printf "${color_future_dates}%s%4s${reset} " "${l0[$i]}" ""
+          printf -v l1 '%s%-2s ' "$l1" "$a"
+          printf -v l2 '%s%+2s ' "$l2" "$d"
         fi
+      else
+        if [[ endDate_exists -eq 1 ]] && [[ $endDate == "$currYear/$month_zero/$d_zero" ]]; then
+          printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
+          printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
+        else
+          printf -v l1 "%s${color_today}%-2s${reset} " "$l1" "$a"
+          printf -v l2 "%s${color_today}%+2s${reset} " "$l2" "$d"
+        fi
+      fi
+      # printf "In the loop: l1=$l1,\n l2=$l2,\n s=$s\n"
+      ((s += 86400))
     done
-
-    l1="\n${l1}\n"
-    l2_fmt="${l2_fmt}\n"
-
-    # Print the dates of the current month
-    echo -e "$l1$l2_fmt"
+    printf '%s\n%s\n%s\n\n' "$l0" "$l1" "$l2"
 }
 
 # Set the deadline in the following format: YYYY/MM/DD
