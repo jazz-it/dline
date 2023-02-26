@@ -5,8 +5,6 @@ dcal() {
         cd -- "$(dirname "$0")" >/dev/null 2>&1
         pwd -P
     )"
-    current_date=$(date +"%Y/%m/%d")
-    current_date_formatted=$(date -d "$current_date" +%d.%m.%Y)
 
     # Get the current Unix timestamp
     timestamp=$(date +%s)
@@ -16,6 +14,9 @@ dcal() {
     month=$(date -d @$timestamp +%m)
     day=$(date -d @$timestamp +%d)
 
+    current_date="${year}/${month}/${day}"
+    current_date_formatted="${day}.${month}.${year}"
+    
     # Define colors for past, present, and future
     alert="\033[0;31m"               # Red
     color_past_dates="\033[1;34m"    # Light Blue
@@ -147,16 +148,13 @@ dcal() {
     printf -v now '%(%s)T' -1
     printf -v d '%(%-d)T' "$now"
     printf -v h '%(%-H)T' "$now"
-    printf -v month '%(%-m)T' "$now"
     printf -v month_zero '%02d' "$month"
-    printf -v currDate $(date +'%-d')
-    printf -v currYear $(date +'%Y')
 
-    s=$((now +(12-h)*3600 - (d-1) * 86400))
+    s=$((now - (d-1) * 86400))
 
     l0= l1= l2=
 
-    weekend_days=$(cal | awk 'NF==7{print $1,$NF}')
+    weekend_days=$(cal -m | awk 'NF==7{print $(NF-1),$NF}')
     weekend_days=${weekend_days//[![:alpha:]]}
 
     while
@@ -176,19 +174,19 @@ dcal() {
       (( ${#a} > 2 )) && a="${a:0:2}"
       printf -v d_zero '%02d' "$d"
 
-      if [[ $d -lt $currDate ]]; then
+      if [[ $d -lt $day ]]; then
         printf -v l1 "%s${color_past_dates}%-2s${reset} " "$l1" "$a"
         printf -v l2 "%s${color_past_dates}%+2s${reset} " "$l2" "$d"
-      elif [[ $d -gt $currDate ]]; then
+      elif [[ $d -gt $day ]]; then
         if [[ "$weekend_days" == *"$a"* ]]; then
-          if [[ endDate_exists -eq 1 ]] && [[ $endDate == "$currYear/$month_zero/$d_zero" ]]; then
+          if [[ endDate_exists -eq 1 ]] && [[ $endDate == "$year/$month_zero/$d_zero" ]]; then
             printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
             printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
           else
             printf -v l1 "%s${color_weekends}%-2s${reset} " "$l1" "$a"
             printf -v l2 "%s${color_weekends}%+2s${reset} " "$l2" "$d"
           fi
-        elif [[ endDate_exists -eq 1 ]] && [[ $endDate == "$currYear/$month_zero/$d_zero" ]]; then
+        elif [[ endDate_exists -eq 1 ]] && [[ $endDate == "$year/$month_zero/$d_zero" ]]; then
           printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
           printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
         else
@@ -196,7 +194,7 @@ dcal() {
           printf -v l2 '%s%+2s ' "$l2" "$d"
         fi
       else
-        if [[ endDate_exists -eq 1 ]] && [[ $endDate == "$currYear/$month_zero/$d_zero" ]]; then
+        if [[ endDate_exists -eq 1 ]] && [[ $endDate == "$year/$month_zero/$d_zero" ]]; then
           printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
           printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
         else
