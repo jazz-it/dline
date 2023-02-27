@@ -11,6 +11,9 @@ source ${SCRIPTPATH}/calendar.sh
 # Option defaults
 OPT=""
 
+# Script version
+version="0.0.1-1"
+
 # getopts string
 # This string needs to be updated with the single character options (e.g. -f)
 opts="set"
@@ -21,8 +24,17 @@ cmd() { echo $(basename $0); }
 # Help command output
 usage() {
     echo "\
-`cmd` [OPTION...]
--s, --set; Set a deadline
+
+Usage:
+ `cmd` -s; set a deadline through interactive mode
+ `cmd` -s year/month/day; set a deadline directly
+ `cmd`; display a calendar
+;
+Options:
+-h, --help; display this help
+-s, --set [YYYY/MM/DD]; set a deadline: if the optional argument is missing 
+; or invalid, interactive mode is called
+-v, --verion; display version
 " | column -t -s ";"
 }
 
@@ -46,6 +58,7 @@ for pass in 1 2; do
             ;;
         -*) case $1 in
             -s | --set) s="set" ;;
+            -v | --version) v="set" ;;
             -h | --help) usage && exit 0 ;;
             --*) error $1 ;;
             -*) if [ $pass -eq 1 ]; then
@@ -75,6 +88,10 @@ if [[ "$s" == "set" ]] && [[ $1 =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]] && [[ $(dat
     exit 0
 elif [[ "$s" == "set" ]]; then
     set_dcal
+    exit 0
+# Handle positional arguments
+elif [[ "$v" == "set" ]]; then
+    echo "`cmd`: Version $version"
     exit 0
 # Handle positional arguments
 elif [ -n "$*" ]; then

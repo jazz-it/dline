@@ -7,13 +7,13 @@ Bash/zsh calendar that displays a deadline and calculates the time left
 
 **dline** is a simple yet powerful bash script that serves as a visual calendar. Compatible with both bash and zsh, this script can help you stay on top of your deadlines and keep track of your time effectively. The recommended workflow is to set your deadline using the command line: 
 
-```zsh
-dline --set
+```bash
+dline -s [year/month/day]
 ```
 
-followed by entering the targeted date in "YYYY/MM/DD" format. This creates a file in the same directory your project resides and is called `.deadline` which stores your current deadline. Finally, run:
+If the optional date argument is missing or invalid, interactive mode is called. This creates a file in the same directory your project resides and is called `.deadline` which stores your current deadline. Finally, run:
 
-```zsh
+```bash
 dline
 ```
 
