@@ -34,7 +34,7 @@ Options:
 -h, --help; display this help
 -s, --set [YYYY/MM/DD]; set a deadline: if the optional argument is missing 
 ; or invalid, interactive mode is called
--v, --verion; display version
+-v, --version; display version
 " | column -t -s ";"
 }
 
