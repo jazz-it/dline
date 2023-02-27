@@ -23,11 +23,18 @@ cmd() { echo $(basename $0); }
 
 # Help command output
 usage() {
+    IFS="/"
+    output1=$(date -d "+15 days" "+%Y/%m/%d")
+    # Use the read command to split the output into separate variables
+    read year month day <<< "$output1"
+    unset IFS
+    printf -v day_zero '%02d' "$day"
+    printf -v month_zero '%02d' "$month"
     echo "\
 
 Usage:
  `cmd` -s; set a deadline through interactive mode
- `cmd` -s year/month/day; set a deadline directly
+ `cmd` -s ${year}/${month_zero}/${day_zero}; set a deadline directly
  `cmd`; display a calendar
 ;
 Options:
