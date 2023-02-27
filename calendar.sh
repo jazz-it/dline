@@ -16,7 +16,7 @@ dcal() {
     unset IFS
 
     current_date="${year}/${month}/${day}"
-    current_date_formatted="${day}.${month}.${year}"
+    current_date_formatted=$(date "+$(locale -k LC_TIME | grep ^d_fmt | cut -d= -f2 | tr -d '"' | sed -e 's/y/Y/')")
     
     # Define colors for past, present, and future
     alert="\033[0;31m"               # Red
@@ -35,8 +35,9 @@ dcal() {
     end_date_input=$(head -n 1 ${SCRIPTPATH}/.deadline)
     if ! [[ $end_date_input =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]]; then
         end_date_input="$((year + 1))/01/01"
+        end_date_formatted="New Year $((year + 1))"
     else
-        end_date_formatted=$(date -d "$end_date_input" +%d.%m.%Y)
+        end_date_formatted=$(date -d "$end_date_input" "+$(locale -k LC_TIME | grep ^d_fmt | cut -d= -f2 | tr -d '"' | sed -e 's/y/Y/')")
     fi
 
     # Get the total number of days in the current year
@@ -102,9 +103,17 @@ dcal() {
 
     if [[ $passed_due_date -eq 0 ]]; then
         if [[ "$work_days" -ne "$days" ]]; then
-            printf "%s days until deadline (%s)  ·  %s work days left\n" $days $end_date_formatted $work_days
+            if [[ "$end_date_formatted" == *"New Year"* ]]; then
+                printf "%s days until the %s  ·  %s work days left\n" $days "$end_date_formatted" $work_days
+            else
+                printf "%s days until deadline (%s)  ·  %s work days left\n" $days "$end_date_formatted" $work_days
+            fi
         else
-            printf "%s %s until deadline (%s)  ·  Hurry up! 😊\n" $work_days $sp $end_date_formatted
+            if [[ "$end_date_formatted" == *"New Year"* ]]; then
+                printf "%s %s until the %s  ·  Yaaaay! 😊\n" $work_days $sp "$end_date_formatted"
+            else
+                printf "%s %s until deadline (%s)  ·  Hurry up! 😊\n" $work_days $sp "$end_date_formatted"
+            fi
         fi
     else
         printf "${alert}Time overdue (in days): %s${reset}\n" "$days"
@@ -192,7 +201,8 @@ set_dcal() {
     deadline=$(head -n 1 ${SCRIPTPATH}/.deadline)
     sample="YYYY/MM/DD"
     prompt_bash="Enter a new deadline"
-    prompt_zsh="Enter a new deadline [%B%F{yellow}${sample}%f]: "
+    prompt_bash2="or 'none'"
+    prompt_zsh="Enter a new deadline [%B%F{yellow}${sample}%f] or 'none': "
     if [[ ! $deadline =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]]; then
         deadline=""
     fi
@@ -203,7 +213,7 @@ set_dcal() {
     else
         if [ -n "$BASH_VERSION" ]; then
             echo -ne "$prompt_bash"
-            read -ei "$deadline" -p " [$(echo -e "${YELLOW}${sample}${NC}")]: " DEADLINE
+            read -ei "$deadline" -p " [$(echo -e "${YELLOW}${sample}${NC}")] ${prompt_bash2}: " DEADLINE
         else
             vared -ep "${prompt_zsh}" deadline
             DEADLINE=$deadline
@@ -213,19 +223,18 @@ set_dcal() {
     DEADLINE=${DEADLINE:-"$deadline"}
 
     if [[ $DEADLINE =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]]; then
-        {
-            DEADLINE_FMT=$(date -d $DEADLINE +"%d.%m.%Y")
-            echo $(expr '(' $(date -d $DEADLINE +%s) - $(date +%s) + 86399 ')' / 86400) " days until deadline ($DEADLINE_FMT)"
-            set +o noclobber
-            echo $DEADLINE >${SCRIPTPATH}/.deadline
-            set -o noclobber
-        }
+        DEADLINE_FMT=$(date -d $DEADLINE +"%d.%m.%Y")
+        echo $(expr '(' $(date -d $DEADLINE +%s) - $(date +%s) + 86399 ')' / 86400) " days until deadline ($DEADLINE_FMT)"
+        set +o noclobber
+        echo $DEADLINE >${SCRIPTPATH}/.deadline
+        set -o noclobber
+    elif [[ "$DEADLINE" == "none" ]]; then
+        set +o noclobber
+        echo "" >${SCRIPTPATH}/.deadline
+        set -o noclobber
+        echo -ne "No deadline.\n"
     else
-        {
-            set +o noclobber
-            echo '' >${SCRIPTPATH}/.deadline
-            set -o noclobber
-            echo "No deadline."
-        }
+        echo -ne "Invalid date format: ${DEADLINE}\n"
+        exit 1
     fi
 }
