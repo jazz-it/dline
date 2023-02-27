@@ -199,10 +199,10 @@ set_dcal() {
         pwd -P
     )"
     deadline=$(head -n 1 ${SCRIPTPATH}/.deadline)
-    sample="YYYY/MM/DD"
     prompt_bash="Enter a new deadline"
+    sample="YYYY/MM/DD"
     prompt_bash2="or 'none'"
-    prompt_zsh="Enter a new deadline [%B%F{yellow}${sample}%f] or 'none': "
+    prompt_zsh="Enter a new deadline [%B%F{yellow}${sample}%f or 'none']: "
     if [[ ! $deadline =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]]; then
         deadline=""
     fi
