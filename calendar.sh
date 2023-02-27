@@ -168,14 +168,14 @@ dcal() {
         printf -v l2 "%s${color_past_dates}%+2s${reset} " "$l2" "$d"
       elif [[ $d -gt $day ]]; then
         if [[ "$weekend_days" == *"$a"* ]]; then
-          if [[ -n $end_date ]] && [[ $end_date == "$year/$month_zero/$d_zero" ]]; then
+          if [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" ]]; then
             printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
             printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
           else
             printf -v l1 "%s${color_weekends}%-2s${reset} " "$l1" "$a"
             printf -v l2 "%s${color_weekends}%+2s${reset} " "$l2" "$d"
           fi
-        elif [[ -n $end_date ]] && [[ $end_date == "$year/$month_zero/$d_zero" ]]; then
+        elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" ]]; then
           printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
           printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
         else
@@ -183,7 +183,7 @@ dcal() {
           printf -v l2 '%s%+2s ' "$l2" "$d"
         fi
       else
-        if [[ -n $end_date ]] && [[ $end_date == "$year/$month_zero/$d_zero" ]]; then
+        if [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" ]]; then
           printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
           printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
         else
