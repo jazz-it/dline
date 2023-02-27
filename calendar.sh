@@ -16,7 +16,8 @@ dcal() {
     unset IFS
 
     current_date="${year}/${month}/${day}"
-    current_date_formatted=$(date "+$(locale -k LC_TIME | grep ^d_fmt | cut -d= -f2 | tr -d '"' | sed -e 's/y/Y/')")
+    locale_fmt=$(locale -k LC_TIME | grep ^d_fmt | cut -d= -f2 | tr -d '"' | sed -e 's/y/Y/')
+    current_date_formatted=$(date "+${locale_fmt}")
     
     # Define colors for past, present, and future
     alert="\033[0;31m"               # Red
@@ -37,7 +38,7 @@ dcal() {
         end_date_input="$((year + 1))/01/01"
         end_date_formatted="New Year $((year + 1))"
     else
-        end_date_formatted=$(date -d "$end_date_input" "+$(locale -k LC_TIME | grep ^d_fmt | cut -d= -f2 | tr -d '"' | sed -e 's/y/Y/')")
+        end_date_formatted=$(date -d "$end_date_input" "+${locale_fmt}")
     fi
 
     # Get the total number of days in the current year
@@ -51,7 +52,7 @@ dcal() {
     percent=$((100 * $((10#$day_of_year)) / $total_days))
 
     # Print the required information
-    printf "${color_current_month}Progress: %s%%    Day: %s/%03d    Week: %s/%02d    Date: %s %s    Time: %s${reset}\n" "$percent" $day_of_year $total_days $current_week $total_weeks $day_name "$current_date_formatted" "$current_time"
+    printf "${color_current_month}Progress: %s%%    Day: %s/%03d    Week: %s/%02d    Today: %s, %s    Time: %s${reset}\n" "$percent" $day_of_year $total_days $current_week $total_weeks $day_name "$current_date_formatted" "$current_time"
 
     end_timestamp=$(date -d "$end_date_input" +%s)
 
