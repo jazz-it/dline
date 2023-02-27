@@ -73,7 +73,7 @@ dcal() {
         end_date=$current_date
     fi
 
-    days=$(((end_timestamp - start_timestamp) / 86400))
+    days=$(((end_timestamp - start_timestamp + 86399) / 86400))
 
     # Checking a proper use of singular vs. plural: day(s)
     sp="days"
@@ -111,7 +111,7 @@ dcal() {
             fi
         else
             if [[ "$end_date_formatted" == *"New Year"* ]]; then
-                printf "%s %s until the %s  ·  Yaaaay! 😊\n" $work_days $sp "$end_date_formatted"
+                printf "%s %s until the %s  ·  We made it! 😊\n" $work_days $sp "$end_date_formatted"
             else
                 printf "%s %s until deadline (%s)  ·  Hurry up! 😊\n" $work_days $sp "$end_date_formatted"
             fi
@@ -202,8 +202,8 @@ set_dcal() {
     deadline=$(head -n 1 ${SCRIPTPATH}/.deadline)
     prompt_bash="Enter a new deadline"
     sample="YYYY/MM/DD"
-    prompt_bash2="or 'none'"
-    prompt_zsh="Enter a new deadline [%B%F{yellow}${sample}%f or 'none']: "
+    prompt_bash2="or '${YELLOW}none${NC}'"
+    prompt_zsh="Enter a new deadline [%B%F{yellow}${sample}%f or '%B%F{yellow}none%f']: "
     if [[ ! $deadline =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]]; then
         deadline=""
     fi
