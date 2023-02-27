@@ -7,16 +7,17 @@ dcal() {
     )"
 
     IFS="/"
-    output1=$(date "+%Y/%m/%d/%j/%V/%A/%s/%X")
+    output1=$(date "+%Y/%m/%d/%j/%U/%V/%A/%s/%X")
     # Use the read command to split the output into separate variables
-    read year month day day_of_year current_week day_name start_timestamp current_time <<< "$output1"
+    read year month day day_of_year current_week_ansi current_week_iso day_name start_timestamp current_time <<< "$output1"
 
-    output2=$(date -d "${year}/12/31" "+%s/%V")
-    read last_day_timestamp total_weeks <<< "$output2"
+    output2=$(date -d "${year}/12/31" "+%s/%U/%V")
+    read last_day_timestamp total_weeks_ansi total_weeks_iso <<< "$output2"
     unset IFS
 
     current_date="${year}/${month}/${day}"
     locale_fmt=$(locale -k LC_TIME | grep ^d_fmt | cut -d= -f2 | tr -d '"' | sed -e 's/y/Y/')
+    first_weekday=$(locale -k LC_TIME | grep ^first_weekday | cut -d= -f2 | tr -d '"')
     current_date_formatted=$(date "+${locale_fmt}")
     
     # Define colors for past, present, and future
@@ -48,6 +49,13 @@ dcal() {
         total_days=365
     fi
 
+    if [ $first_weekday -eq 2 ]; then
+        current_week=${current_week_iso}
+        total_weeks=${total_weeks_iso}
+    else
+        current_week=${current_week_ansi}
+        total_weeks=${total_weeks_ansi}
+    fi
     # Get the progress of the current year (values with leading zeros in bash are treated like octal numbers)
     percent=$((100 * $((10#$day_of_year)) / $total_days))
 
@@ -160,14 +168,14 @@ dcal() {
         printf -v l2 "%s${color_past_dates}%+2s${reset} " "$l2" "$d"
       elif [[ $d -gt $day ]]; then
         if [[ "$weekend_days" == *"$a"* ]]; then
-          if [[ endDate_exists -eq 1 ]] && [[ $endDate == "$year/$month_zero/$d_zero" ]]; then
+          if [[ -n $end_date ]] && [[ $end_date == "$year/$month_zero/$d_zero" ]]; then
             printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
             printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
           else
             printf -v l1 "%s${color_weekends}%-2s${reset} " "$l1" "$a"
             printf -v l2 "%s${color_weekends}%+2s${reset} " "$l2" "$d"
           fi
-        elif [[ endDate_exists -eq 1 ]] && [[ $endDate == "$year/$month_zero/$d_zero" ]]; then
+        elif [[ -n $end_date ]] && [[ $end_date == "$year/$month_zero/$d_zero" ]]; then
           printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
           printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
         else
@@ -175,7 +183,7 @@ dcal() {
           printf -v l2 '%s%+2s ' "$l2" "$d"
         fi
       else
-        if [[ endDate_exists -eq 1 ]] && [[ $endDate == "$year/$month_zero/$d_zero" ]]; then
+        if [[ -n $end_date ]] && [[ $end_date == "$year/$month_zero/$d_zero" ]]; then
           printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
           printf -v l2 "%s${color_deadline}%+2s${reset} " "$l2" "$d"
         else
