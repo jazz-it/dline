@@ -213,7 +213,7 @@ set_dcal() {
     else
         if [ -n "$BASH_VERSION" ]; then
             echo -ne "$prompt_bash"
-            read -ei "$deadline" -p " [$(echo -e "${YELLOW}${sample}${NC}")] ${prompt_bash2}: " DEADLINE
+            read -ei "$deadline" -p " [$(echo -e "${YELLOW}${sample}${NC} ${prompt_bash2}")]: " DEADLINE
         else
             vared -ep "${prompt_zsh}" deadline
             DEADLINE=$deadline
