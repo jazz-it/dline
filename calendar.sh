@@ -7,9 +7,12 @@ dcal() {
     )"
 
     IFS="/"
-    output=$(date "+%Y/%m/%d/%j/%V/%A/%s/%u/%X")
+    output1=$(date "+%Y/%m/%d/%j/%V/%A/%s/%X")
     # Use the read command to split the output into separate variables
-    read year month day day_of_year current_week day_name start_timestamp start_dow current_time <<< "$output"
+    read year month day day_of_year current_week day_name start_timestamp current_time <<< "$output1"
+
+    output2=$(date -d "${year}/12/31" "+%s/%V")
+    read last_day_timestamp total_weeks <<< "$output2"
     unset IFS
 
     current_date="${year}/${month}/${day}"
@@ -46,16 +49,9 @@ dcal() {
     # Get the progress of the current year (values with leading zeros in bash are treated like octal numbers)
     percent=$((100 * $((10#$day_of_year)) / $total_days))
 
-    # Get the timestamp of the last day of the current year
-    last_day_timestamp=$(date -d "${year}/12/31" +%s)
-
-    # Get the week number of the last day of the current year
-    total_weeks=$(date -d @$last_day_timestamp +%V)
-
     # Print the required information
     printf "${color_current_month}Progress: %s%%    Day: %s/%03d    Week: %s/%02d    Date: %s %s    Time: %s${reset}\n" "$percent" $day_of_year $total_days $current_week $total_weeks $day_name "$current_date_formatted" "$current_time"
 
-    # start_timestamp=$(date -d "$current_date" +%s)
     end_timestamp=$(date -d "$end_date_input" +%s)
 
     passed_due_date=0
@@ -79,7 +75,7 @@ dcal() {
         sp="day"
     fi
 
-    # start_dow=$(date -d "$start_date" +%u)
+    start_dow=$(date -d "$start_date" +%u)
     end_dow=$(date -d "$end_date" +%u)
 
     weekends=$(((days + $start_dow - 1) / 7 * 2))
@@ -121,16 +117,11 @@ dcal() {
 
     l0= l1= l2=
 
-    # Declare the array "months"
-    declare -a months
 
-    # Set the IFS variable to ";"
     IFS=";"
-
-    # Add the string to the "months" array
+    # Declare the array "months" (locale names)
+    declare -a months
     months=($(locale -k LC_TIME | grep ^abmon | cut -d= -f2 | tr -d '"'))
-
-    # Reset the IFS variable to its default value
     unset IFS
 
     weekend_days=$(cal -m | awk 'NF==7{print $(NF-1),$NF}')
@@ -146,7 +137,7 @@ dcal() {
         elif [[ $d -gt $month ]]; then
             printf -v l0 '%s%-8s' "$l0" "${months[$d-1]}"
         else
-            printf -v l0 '%s\e[33m%-8s\e[m' "$l0" "${months[$d-1]}"
+            printf -v l0 "%s${color_current_month}%-8s${reset}" "$l0" "${months[$d-1]}"
         fi
       fi
 
@@ -181,9 +172,10 @@ dcal() {
           printf -v l2 "%s${color_today}%+2s${reset} " "$l2" "$d"
         fi
       fi
-      # printf "In the loop: l1=$l1,\n l2=$l2,\n s=$s\n"
       ((s += 86400))
     done
+
+    # Print the calendar
     printf '%s\n%s\n%s\n\n' "$l0" "$l1" "$l2"
 }
 
