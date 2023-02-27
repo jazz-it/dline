@@ -273,7 +273,8 @@ set_dcal() {
             echo -ne "Invalid date format: ${DEADLINE}\n"
             exit 1
         else
-            DEADLINE_FMT=$(date -d $DEADLINE +"%d.%m.%Y")
+            locale_fmt=$(locale -k LC_TIME | grep ^d_fmt | cut -d= -f2 | tr -d '"' | sed -e 's/y/Y/')
+            DEADLINE_FMT=$(date -d $DEADLINE "+${locale_fmt}")
             echo $(expr '(' $(date -d $DEADLINE +%s) - $(date +%s) + 86399 ')' / 86400) " days until deadline ($DEADLINE_FMT)"
             set +o noclobber
             echo $DEADLINE >${SCRIPTPATH}/.deadline
