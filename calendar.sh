@@ -6,13 +6,11 @@ dcal() {
         pwd -P
     )"
 
-    # Get the current Unix timestamp
-    timestamp=$(date +%s)
-
-    # Split the current date into year, month and day
-    year=$(date -d @$timestamp +%Y)
-    month=$(date -d @$timestamp +%m)
-    day=$(date -d @$timestamp +%d)
+    IFS="/"
+    output=$(date "+%Y/%m/%d/%j/%V/%A/%s/%u/%X")
+    # Use the read command to split the output into separate variables
+    read year month day day_of_year current_week day_name start_timestamp start_dow current_time <<< "$output"
+    unset IFS
 
     current_date="${year}/${month}/${day}"
     current_date_formatted="${day}.${month}.${year}"
@@ -28,16 +26,6 @@ dcal() {
     color_line="\033[0;30m"          # Dark gray
     reset="\033[0m"                  # Reset color
 
-    # Initialize the lists of the names of all 12 monts
-    l0=()
-    # List of all names of the days of the current month
-    l1=""
-
-    # List of all dates of the current month
-    l2=($(seq 1 $(cal "$month" "$year" | awk 'NF {DAYS = $NF}; END {print DAYS}')))
-    # List of all formatted dates of the current month, marked with proper colors
-    l2_fmt=""
-
     if [[ ! -e ${SCRIPTPATH}/.deadline ]]; then
         touch ${SCRIPTPATH}/.deadline
     fi
@@ -47,15 +35,6 @@ dcal() {
     else
         end_date_formatted=$(date -d "$end_date_input" +%d.%m.%Y)
     fi
-
-    # Create a list with all the names of months
-    for m in {1..12}; do
-        l0+=("$(date -d "$m/1/2020" +%b)")
-    done
-
-    # Get the current day of the year
-    # day_of_year=$(date -d "$current_date" +%j)
-    day_of_year=$(date -d @$timestamp +%j)
 
     # Get the total number of days in the current year
     if [ "$(date -d "${year}-02-29" +%Y-%m-%d 2>/dev/null)" = "${year}-02-29" ]; then
@@ -67,25 +46,16 @@ dcal() {
     # Get the progress of the current year (values with leading zeros in bash are treated like octal numbers)
     percent=$((100 * $((10#$day_of_year)) / $total_days))
 
-    # Get the current week number
-    current_week=$(date -d @$timestamp +%V)
-
     # Get the timestamp of the last day of the current year
     last_day_timestamp=$(date -d "${year}/12/31" +%s)
 
     # Get the week number of the last day of the current year
     total_weeks=$(date -d @$last_day_timestamp +%V)
 
-    # Get the full name of the current day
-    day_name=$(date -d "$current_date" +%A)
-
-    # Get the current time
-    current_time=$(date +%X)
-
     # Print the required information
     printf "${color_current_month}Progress: %s%%    Day: %s/%03d    Week: %s/%02d    Date: %s %s    Time: %s${reset}\n" "$percent" $day_of_year $total_days $current_week $total_weeks $day_name "$current_date_formatted" "$current_time"
 
-    start_timestamp=$(date -d "$current_date" +%s)
+    # start_timestamp=$(date -d "$current_date" +%s)
     end_timestamp=$(date -d "$end_date_input" +%s)
 
     passed_due_date=0
@@ -109,22 +79,22 @@ dcal() {
         sp="day"
     fi
 
-    start_dow=$(date -d "$start_date" +%u)
+    # start_dow=$(date -d "$start_date" +%u)
     end_dow=$(date -d "$end_date" +%u)
 
-    weekends=$(((days + $(date -d "$start_date" +%u) - 1) / 7 * 2))
+    weekends=$(((days + $start_dow - 1) / 7 * 2))
 
     # Check if the start date is a weekend day
-    if [ $(date -d "$start_date" +%u) -eq 7 ]; then
+    if [ $start_dow -eq 7 ]; then
         weekends=$((weekends - 2))
-    elif [ $(date -d "$start_date" +%u) -eq 6 ]; then
+    elif [ $start_dow -eq 6 ]; then
         weekends=$((weekends - 1))
     fi
 
     # Check if the end date is a weekend day
-    if [ $(date -d "$end_date" +%u) -eq 7 ]; then
+    if [ $end_dow -eq 7 ]; then
         weekends=$((weekends + 2))
-    elif [ $(date -d "$end_date" +%u) -eq 6 ]; then
+    elif [ $end_dow -eq 6 ]; then
         weekends=$((weekends + 1))
     fi
 
@@ -145,14 +115,23 @@ dcal() {
     printf '%.s─' $(seq 1 $(tput cols))
     echo -e "$reset"
 
-    printf -v now '%(%s)T' -1
-    printf -v d '%(%-d)T' "$now"
-    printf -v h '%(%-H)T' "$now"
     printf -v month_zero '%02d' "$month"
 
-    s=$((now - (d-1) * 86400))
+    s=$((start_timestamp - (day-1) * 86400))
 
     l0= l1= l2=
+
+    # Declare the array "months"
+    declare -a months
+
+    # Set the IFS variable to ";"
+    IFS=";"
+
+    # Add the string to the "months" array
+    months=($(locale -k LC_TIME | grep ^abmon | cut -d= -f2 | tr -d '"'))
+
+    # Reset the IFS variable to its default value
+    unset IFS
 
     weekend_days=$(cal -m | awk 'NF==7{print $(NF-1),$NF}')
     weekend_days=${weekend_days//[![:alpha:]]}
@@ -163,11 +142,11 @@ dcal() {
     do
       if [[ $d -lt 13 ]]; then
         if [[ $d -lt $month ]]; then
-            printf -v l0 "%s${color_past_dates}%-8s${reset}" "$l0" "$(date +%b -d ""$d/01/1980"")"
+            printf -v l0 "%s${color_past_dates}%-8s${reset}" "$l0" "${months[$d-1]}"
         elif [[ $d -gt $month ]]; then
-            printf -v l0 '%s%-8s' "$l0" "$(date +%b -d ""$d/01/1980"")"
+            printf -v l0 '%s%-8s' "$l0" "${months[$d-1]}"
         else
-            printf -v l0 '%s\e[33m%-8s\e[m' "$l0" "$(date +%b -d ""$d/01/1980"")"
+            printf -v l0 '%s\e[33m%-8s\e[m' "$l0" "${months[$d-1]}"
         fi
       fi
 
