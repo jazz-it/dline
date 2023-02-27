@@ -57,6 +57,10 @@ dcal() {
     passed_due_date=0
     start_date=$current_date
     end_date=$end_date_input
+    
+    # First day of the month (timestamp)
+    s=$((start_timestamp - (day-1) * 86400))
+
     # Check if the start date is before the end date
     if [[ "$start_timestamp" -gt "$end_timestamp" ]]; then
         passed_due_date=1
@@ -65,6 +69,7 @@ dcal() {
         end_timestamp=$start
         start_date=$end_date_input
         end_date=$current_date
+        s=$((end_timestamp - (day-1) * 86400))
     fi
 
     days=$(((end_timestamp - start_timestamp) / 86400))
@@ -113,10 +118,7 @@ dcal() {
 
     printf -v month_zero '%02d' "$month"
 
-    s=$((start_timestamp - (day-1) * 86400))
-
     l0= l1= l2=
-
 
     IFS=";"
     # Declare the array "months" (locale names)
