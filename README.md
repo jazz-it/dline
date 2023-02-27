@@ -1,7 +1,7 @@
 # dline
 Bash/zsh calendar that displays a deadline and calculates the time left
 
-![dline2](https://user-images.githubusercontent.com/411471/217948366-1549e86d-e679-424e-956d-c0285ad24f8a.png)
+![2023-02-28_00-50](https://user-images.githubusercontent.com/411471/221715818-860d8173-d00e-49d0-9e50-8786c8e5dfe9.png)
 
 ## Usage:
 
