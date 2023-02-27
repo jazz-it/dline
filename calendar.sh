@@ -231,12 +231,18 @@ set_dcal() {
 
     DEADLINE=${DEADLINE:-"$deadline"}
 
+
     if [[ $DEADLINE =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]]; then
-        DEADLINE_FMT=$(date -d $DEADLINE +"%d.%m.%Y")
-        echo $(expr '(' $(date -d $DEADLINE +%s) - $(date +%s) + 86399 ')' / 86400) " days until deadline ($DEADLINE_FMT)"
-        set +o noclobber
-        echo $DEADLINE >${SCRIPTPATH}/.deadline
-        set -o noclobber
+        if ! date -d "$DEADLINE" &> /dev/null; then
+            echo -ne "Invalid date format: ${DEADLINE}\n"
+            exit 1
+        else
+            DEADLINE_FMT=$(date -d $DEADLINE +"%d.%m.%Y")
+            echo $(expr '(' $(date -d $DEADLINE +%s) - $(date +%s) + 86399 ')' / 86400) " days until deadline ($DEADLINE_FMT)"
+            set +o noclobber
+            echo $DEADLINE >${SCRIPTPATH}/.deadline
+            set -o noclobber
+        fi
     elif [[ "$DEADLINE" == "none" ]]; then
         set +o noclobber
         echo "" >${SCRIPTPATH}/.deadline
