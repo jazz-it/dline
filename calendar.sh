@@ -69,7 +69,6 @@ dcal() {
         end_timestamp=$start
         start_date=$end_date_input
         end_date=$current_date
-        s=$((end_timestamp - (day-1) * 86400))
     fi
 
     days=$(((end_timestamp - start_timestamp) / 86400))
