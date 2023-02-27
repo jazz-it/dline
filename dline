@@ -45,7 +45,7 @@ for pass in 1 2; do
             break
             ;;
         -*) case $1 in
-            -s | --set) set_dcal && exit 0 ;;
+            -s | --set) s="set" ;;
             -h | --help) usage && exit 0 ;;
             --*) error $1 ;;
             -*) if [ $pass -eq 1 ]; then
@@ -68,14 +68,20 @@ for pass in 1 2; do
     fi
 done
 
+now=$(date "+%s")
+if [[ "$s" == "set" ]] && [[ $1 =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]] && [[ $(date -d "$1" "+%s") -gt $now ]]; then
+    set_dcal $1
+    unset s
+    exit 0
+elif [[ "$s" == "set" ]]; then
+    set_dcal
+    exit 0
 # Handle positional arguments
-if [ -n "$*" ]; then
+elif [ -n "$*" ]; then
     echo "`cmd`: Extra arguments -- $*"
     echo "Try `cmd` -h' for more information."
     exit 1
+else
+    # Run the main app when no arguments are passed
+    dcal
 fi
-
-# Run the main app when no arguments are passed
-echo "Rendering..."
-clear
-dcal

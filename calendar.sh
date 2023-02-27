@@ -177,7 +177,7 @@ dcal() {
     done
 
     # Print the calendar
-    printf '%s\n%s\n%s\n\n' "$l0" "$l1" "$l2"
+    printf '%s\n%s\n%s\n' "$l0" "$l1" "$l2"
 }
 
 # Set the deadline in the following format: YYYY/MM/DD
@@ -196,13 +196,20 @@ set_dcal() {
     if [[ ! $deadline =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]]; then
         deadline=""
     fi
-    if [ -n "$BASH_VERSION" ]; then
-        echo -ne "$prompt_bash"
-        read -ei "$deadline" -p " [$(echo -e "${YELLOW}${sample}${NC}")]: " DEADLINE
+
+    confirmed_date=${1}
+    if [ -n "$confirmed_date" ]; then
+        DEADLINE="${confirmed_date}"
     else
-        vared -ep "${prompt_zsh}" deadline
-        DEADLINE=$deadline
+        if [ -n "$BASH_VERSION" ]; then
+            echo -ne "$prompt_bash"
+            read -ei "$deadline" -p " [$(echo -e "${YELLOW}${sample}${NC}")]: " DEADLINE
+        else
+            vared -ep "${prompt_zsh}" deadline
+            DEADLINE=$deadline
+        fi
     fi
+
     DEADLINE=${DEADLINE:-"$deadline"}
 
     if [[ $DEADLINE =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]]; then
