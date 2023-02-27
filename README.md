@@ -23,6 +23,27 @@ anytime you want to display your calendar. Yes, it's that simple.
 
 The script calculates the total number of days, including work days, until your deadline and shows the progress of the year in terms of days passed, week number, and percent. If there's no deadline set, the script counts the remaining days until the next New Year. The calendar is displayed in a minimalistic format, taking up only a few lines on the screen, making it easy to keep track of your time and deadlines.
 
+You could even translate or change all the output strings to your desired language. Just create a new file `.dlinerc` then copy the associative array `$MSG` from the `calendar.sh` and modify it to your liking, e.g.:
+
+```bash
+MSG['progress']="Proteklo"
+MSG['day']="Dan"
+MSG['week']="Tjedan"
+MSG['today']="Danas"
+MSG['time']="Vrijeme"
+MSG['day_singular']="dan"
+MSG['day_plural']="dana"
+MSG['days_until_the']="dana do"
+MSG['new_year']="Nove Godine"
+MSG['work_days_left']="preostalih radnih dana"
+MSG['days_until_deadline']="dana do roka"
+MSG['until_the']="do"
+MSG['until_deadline']="do roka"
+MSG['happy_new_year']="Sretan Božić! 😊"
+MSG['soon']="Požurimo! 😊"
+MSG['overdue']="Prekoračeno (u danima)"
+```
+
 ---
 
 Visualizing time is crucial in making the most of every moment and reaching your goals efficiently.

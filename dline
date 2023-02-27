@@ -12,7 +12,7 @@ source ${SCRIPTPATH}/calendar.sh
 OPT=""
 
 # Script version
-version="0.0.1-1"
+version="0.0.2-1"
 
 # getopts string
 # This string needs to be updated with the single character options (e.g. -f)

@@ -1,10 +1,46 @@
 # Display of a simple calendar
 dcal() {
+
+    declare -A MSG
+
+    # NOTE: Configuration settings
+    # If you would like to translate the output to your own language
+    # copy/paste the content below into the new file called `.dlinerc`
+    # and place it into the same directory with this script.
+    # The file will be ignored from git, so you could freely edit all the values
+    # from the associative array $MSG within the `.dlinerc` file which will override 
+    # all the default values below.
+
+    MSG['progress']="Progress"
+    MSG['day']="Day"
+    MSG['week']="Week"
+    MSG['today']="Today"
+    MSG['time']="Time"
+    MSG['day_singular']="day"
+    MSG['day_plural']="days"
+    MSG['days_until_the']="days until the"
+    MSG['new_year']="New Year"
+    MSG['work_days_left']="work days left"
+    MSG['days_until_deadline']="days until deadline"
+    MSG['until_the']="until the"
+    MSG['until_deadline']="until deadline"
+    MSG['happy_new_year']="We made it! 😊"
+    MSG['soon']="Hurry up! 😊"
+    MSG['overdue']="Time overdue (in days)"
+
+    # --- Don't modify anything below this line ---
+
     # Get the current date
     SCRIPTPATH="$(
         cd -- "$(dirname "$0")" >/dev/null 2>&1
         pwd -P
     )"
+
+    # Check if the file .dlinerc exists and source it if possible
+    I18N=${SCRIPTPATH}/.dlinerc
+    if [ -f "$I18N" ]; then
+        source ${I18N}
+    fi
 
     IFS="/"
     output1=$(date "+%Y/%m/%d/%j/%U/%V/%A/%s/%X")
@@ -60,7 +96,7 @@ dcal() {
     percent=$((100 * $((10#$day_of_year)) / $total_days))
 
     # Print the required information
-    printf "${color_current_month}Progress: %s%%    Day: %s/%03d    Week: %s/%02d    Today: %s, %s    Time: %s${reset}\n" "$percent" $day_of_year $total_days $current_week $total_weeks $day_name "$current_date_formatted" "$current_time"
+    printf "${color_current_month}${MSG['progress']}: %s%%    ${MSG['day']}: %s/%03d    ${MSG['week']}: %s/%02d    ${MSG['today']}: %s, %s    ${MSG['time']}: %s${reset}\n" "$percent" $day_of_year $total_days $current_week $total_weeks $day_name "$current_date_formatted" "$current_time"
 
     end_timestamp=$(date -d "$end_date_input" +%s)
 
@@ -84,9 +120,9 @@ dcal() {
     days=$(((end_timestamp - start_timestamp + 86399) / 86400))
 
     # Checking a proper use of singular vs. plural: day(s)
-    sp="days"
+    sp=${MSG['day_plural']}
     if [[ $days -eq 1 ]]; then
-        sp="day"
+        sp=${MSG['day_singular']}
     fi
 
     start_dow=$(date -d "$start_date" +%u)
@@ -113,19 +149,19 @@ dcal() {
     if [[ $passed_due_date -eq 0 ]]; then
         if [[ "$work_days" -ne "$days" ]]; then
             if [[ "$end_date_formatted" == *"New Year"* ]]; then
-                printf "%s days until the %s  ·  %s work days left\n" $days "$end_date_formatted" $work_days
+                printf "%s ${MSG['days_until_the']} %s  ·  %s ${MSG['work_days_left']}\n" $days "$end_date_formatted" $work_days
             else
-                printf "%s days until deadline (%s)  ·  %s work days left\n" $days "$end_date_formatted" $work_days
+                printf "%s ${MSG['days_until_deadline']} (%s)  ·  %s ${MSG['work_days_left']}\n" $days "$end_date_formatted" $work_days
             fi
         else
             if [[ "$end_date_formatted" == *"New Year"* ]]; then
-                printf "%s %s until the %s  ·  We made it! 😊\n" $work_days $sp "$end_date_formatted"
+                printf "%s %s ${MSG['until_the']} %s  ·  ${MSG['happy_new_year']}\n" $work_days $sp "$end_date_formatted"
             else
-                printf "%s %s until deadline (%s)  ·  Hurry up! 😊\n" $work_days $sp "$end_date_formatted"
+                printf "%s %s ${MSG['until_deadline']} (%s)  ·  ${MSG['soon']}\n" $work_days $sp "$end_date_formatted"
             fi
         fi
     else
-        printf "${alert}Time overdue (in days): %s${reset}\n" "$days"
+        printf "${alert}${MSG['overdue']}: %s${reset}\n" "$days"
     fi
 
     # Straight line
