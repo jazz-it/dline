@@ -39,7 +39,7 @@ MSG['work_days_left']="preostalih radnih dana"
 MSG['days_until_deadline']="dana do roka"
 MSG['until_the']="do"
 MSG['until_deadline']="do roka"
-MSG['happy_new_year']="Sretan Božić! 😊"
+MSG['happy_new_year']="Sretan Božić! 🎄"
 MSG['soon']="Požurimo! 😊"
 MSG['overdue']="Prekoračeno (u danima)"
 ```
