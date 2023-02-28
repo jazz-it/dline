@@ -28,6 +28,17 @@ dcal() {
     MSG['soon']="Hurry up! 😊"
     MSG['overdue']="Time overdue (in days)"
 
+    # Color configuration could be also altered within .dlinerc
+    alert="\033[0;31m"               # Red
+    color_past_dates="\033[1;34m"    # Light Blue
+    color_today="\033[7;33;34m"      # Light Blue inverted
+    color_future_dates=""            # Default terminal color
+    color_weekends="\033[0;35m"      # Magenta
+    color_deadline="\033[0;45m"      # Inverted Magenta
+    color_current_month="\033[0;33m" # Yellow
+    color_line="\033[0;30m"          # Dark gray
+    reset="\033[0m"                  # Reset color
+
     # --- Don't modify anything below this line ---
 
     # Get the current date
@@ -56,17 +67,6 @@ dcal() {
     first_weekday=$(locale -k LC_TIME | grep ^first_weekday | cut -d= -f2 | tr -d '"')
     current_date_formatted=$(date "+${locale_fmt}")
     
-    # Define colors for past, present, and future
-    alert="\033[0;31m"               # Red
-    color_past_dates="\033[1;34m"    # Light Blue
-    color_today="\033[7;33;34m"      # Light Blue inverted
-    color_future_dates=""            # Default terminal color
-    color_weekends="\033[0;35m"      # Magenta
-    color_deadline="\033[0;45m"      # Inverted Magenta
-    color_current_month="\033[0;33m" # Yellow
-    color_line="\033[0;30m"          # Dark gray
-    reset="\033[0m"                  # Reset color
-
     if [[ ! -e ${SCRIPTPATH}/.deadline ]]; then
         touch ${SCRIPTPATH}/.deadline
     fi
