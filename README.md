@@ -42,7 +42,7 @@ MSG['until_the']="do"
 MSG['until_deadline']="do roka"
 MSG['happy_new_year']="Sretan Božić! 🎄"
 MSG['soon']="Požurimo! 😊"
-MSG['overdue']="Prekoračeno (u danima)"
+MSG['overdue']="Dana zakašnjenja"
 ```
 
 ---
