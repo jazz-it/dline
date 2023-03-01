@@ -24,7 +24,7 @@ dcal() {
     MSG['days_until_deadline']="days until deadline"
     MSG['until_the']="until the"
     MSG['until_deadline']="until deadline"
-    MSG['happy_new_year']="We made it! 😊"
+    MSG['happy_new_year']="We made it! ☃️"
     MSG['soon']="Hurry up! 😊"
     MSG['overdue']="Time overdue (in days)"
 
@@ -32,7 +32,7 @@ dcal() {
     alert="\033[0;31m"               # Red
     color_past_dates="\033[1;34m"    # Light Blue
     color_today="\033[7;33;34m"      # Light Blue inverted
-    color_future_dates=""            # Default terminal color
+    color_future_dates="\033[0;30m"  # Dark gray
     color_weekends="\033[0;35m"      # Magenta
     color_deadline="\033[0;45m"      # Inverted Magenta
     color_current_month="\033[0;33m" # Yellow
@@ -190,7 +190,7 @@ dcal() {
         if [[ $d -lt $month ]]; then
             printf -v l0 "%s${color_past_dates}%-8s${reset}" "$l0" "${months[$d-1]}"
         elif [[ $d -gt $month ]]; then
-            printf -v l0 '%s%-8s' "$l0" "${months[$d-1]}"
+            printf -v l0 "%s${color_future_dates}%-8s${reset}" "$l0" "${months[$d-1]}"
         else
             printf -v l0 "%s${color_current_month}%-8s${reset}" "$l0" "${months[$d-1]}"
         fi
