@@ -20,7 +20,7 @@ dcal() {
     MSG['day_plural']="days"
     MSG['days_until_the']="days until the"
     MSG['new_year']="New Year"
-    MSG['work_days_left']="work days left"
+    MSG['workdays_left']="workdays left"
     MSG['days_until_deadline']="days until deadline"
     MSG['until_the']="until the"
     MSG['until_deadline']="until deadline"
