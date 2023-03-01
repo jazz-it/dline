@@ -144,20 +144,20 @@ dcal() {
         weekends=$((weekends + 1))
     fi
 
-    work_days=$((days - weekends))
+    workdays=$((days - weekends))
 
     if [[ $passed_due_date -eq 0 ]]; then
-        if [[ "$work_days" -ne "$days" ]]; then
+        if [[ "$workdays" -ne "$days" ]]; then
             if [[ "$end_date_formatted" == *"New Year"* ]]; then
-                printf "%s ${MSG['days_until_the']} %s  ·  %s ${MSG['work_days_left']}\n" $days "$end_date_formatted" $work_days
+                printf "%s ${MSG['days_until_the']} %s  ·  %s ${MSG['workdays_left']}\n" $days "$end_date_formatted" $workdays
             else
-                printf "%s ${MSG['days_until_deadline']} (%s)  ·  %s ${MSG['work_days_left']}\n" $days "$end_date_formatted" $work_days
+                printf "%s ${MSG['days_until_deadline']} (%s)  ·  %s ${MSG['workdays_left']}\n" $days "$end_date_formatted" $workdays
             fi
         else
             if [[ "$end_date_formatted" == *"New Year"* ]]; then
-                printf "%s %s ${MSG['until_the']} %s  ·  ${MSG['happy_new_year']}\n" $work_days $sp "$end_date_formatted"
+                printf "%s %s ${MSG['until_the']} %s  ·  ${MSG['happy_new_year']}\n" $workdays $sp "$end_date_formatted"
             else
-                printf "%s %s ${MSG['until_deadline']} (%s)  ·  ${MSG['soon']}\n" $work_days $sp "$end_date_formatted"
+                printf "%s %s ${MSG['until_deadline']} (%s)  ·  ${MSG['soon']}\n" $workdays $sp "$end_date_formatted"
             fi
         fi
     else
