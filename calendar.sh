@@ -105,7 +105,7 @@ dcal() {
     end_date=$end_date_input
     
     # First day of the month (timestamp)
-    s=$((start_timestamp - (day-1) * 86400))
+    s=$((start_timestamp - (10#$day-1) * 86400))
 
     # Check if the start date is before the end date
     if [[ "$start_timestamp" -gt "$end_timestamp" ]]; then
@@ -199,10 +199,10 @@ dcal() {
       (( ${#a} > 2 )) && a="${a:0:2}"
       printf -v d_zero '%02d' "$d"
 
-      if [[ $d -lt $day ]]; then
+      if [[ 10#$d -lt 10#$day ]]; then
         printf -v l1 "%s${color_past_dates}%-2s${reset} " "$l1" "$a"
         printf -v l2 "%s${color_past_dates}%+2s${reset} " "$l2" "$d"
-      elif [[ $d -gt $day ]]; then
+      elif [[ 10#$d -gt 10#$day ]]; then
         if [[ "$weekend_days" == *"$a"* ]]; then
           if [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" ]]; then
             printf -v l1 "%s${color_deadline}%-2s${reset} " "$l1" "$a"
