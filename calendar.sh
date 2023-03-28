@@ -108,10 +108,10 @@ dcal() {
     s=$((start_timestamp - (10#$day-1) * 86400))
 
     # Check if the start date is before the end date
-    if [[ "$start_timestamp" -gt "$end_timestamp" ]]; then
+    if [[ $start_timestamp-$end_timestamp -gt 86400 ]]; then
         passed_due_date=1
         start=$start_timestamp
-        start_timestamp=$end_timestamp
+        start_timestamp=$end_timestamp+86400
         end_timestamp=$start
         start_date=$end_date_input
         end_date=$current_date
