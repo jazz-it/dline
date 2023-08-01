@@ -57,6 +57,8 @@ dcal() {
     output1=$(date "+%Y/%m/%d/%j/%U/%V/%A/%s/%X")
     # Use the read command to split the output into separate variables
     read year month day day_of_year current_week_ansi current_week_iso day_name start_timestamp current_time <<< "$output1"
+    # Remove leading zeros from the variable "month"
+    month=${month#0}
 
     output2=$(date -d "${year}/12/31" "+%s/%U/%V")
     read last_day_timestamp total_weeks_ansi total_weeks_iso <<< "$output2"
