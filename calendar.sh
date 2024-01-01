@@ -41,7 +41,7 @@ dcal() {
 
     # --- Don't modify anything below this line ---
 
-    # Get the current date
+    # Get the current path
     SCRIPTPATH="$(
         cd -- "$(dirname "$0")" >/dev/null 2>&1
         pwd -P
@@ -60,7 +60,7 @@ dcal() {
     # Remove leading zeros from the variable "month"
     month=${month#0}
 
-    output2=$(date -d "${year}/12/31" "+%s/%U/%V")
+    output2=$(date -d "${year}/12/28" "+%s/%U/%V")
     read last_day_timestamp total_weeks_ansi total_weeks_iso <<< "$output2"
     unset IFS
 
@@ -90,6 +90,10 @@ dcal() {
     if [ $first_weekday -eq 2 ]; then
         current_week=${current_week_iso}
         total_weeks=${total_weeks_iso}
+        # Check if December 31 is in the first week of the next year and adjust the week number accordingly
+        if [[ "$(date -d "${year}/12/31" "+%V")" == "01" ]]; then
+            total_weeks=$((total_weeks + 1))
+        fi
     else
         current_week=${current_week_ansi}
         total_weeks=${total_weeks_ansi}
@@ -105,7 +109,7 @@ dcal() {
     passed_due_date=0
     start_date=$current_date
     end_date=$end_date_input
-    
+
     # First day of the month (timestamp)
     s=$((start_timestamp - (10#$day-1) * 86400))
 
