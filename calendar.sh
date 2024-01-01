@@ -58,7 +58,7 @@ dcal() {
     export TZ=UTC
 
     # NOTE: For testing purposes only:
-    test_date=""  # Assign your test date here in the format "YYYY-MM-DD HH:MM" to set the current date
+    test_date="2027-12-31 01:30"  # Assign your test date here in the format "YYYY-MM-DD HH:MM" to set the current date
 
     if [[ -z "${test_date}" ]]; then
         output1=$(date "+%Y/%m/%d/%j/%U/%V/%A/%s/%X")
@@ -110,6 +110,8 @@ dcal() {
         total_weeks=${total_weeks_iso}
         if [[ "${month}" == "1" && "${day}" -le 3 && "$(date -d "${year}/01/01" "+%V")" != "01" ]]; then
             current_week=0
+        elif [[ "${month}" == "12" && "$(date -d "${year}/${month}/${day}" "+%V")" == "01" ]]; then
+            current_week=$((total_weeks + 1))
         else
             current_week=${current_week_iso}
         fi
