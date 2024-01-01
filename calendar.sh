@@ -54,21 +54,40 @@ dcal() {
     fi
 
     IFS="/"
-    output1=$(date "+%Y/%m/%d/%j/%U/%V/%A/%s/%X")
+    original_tz=$TZ
+    export TZ=UTC
+
+    # NOTE: For testing purposes only:
+    test_date=""  # Assign your test date here in the format "YYYY-MM-DD HH:MM" to set the current date
+
+    if [[ -z "${test_date}" ]]; then
+        output1=$(date "+%Y/%m/%d/%j/%U/%V/%A/%s/%X")
+    else
+        output1=$(date -d "${test_date}" "+%Y/%m/%d/%j/%U/%V/%A/%s/%X")
+    fi
     # Use the read command to split the output into separate variables
     read year month day day_of_year current_week_ansi current_week_iso day_name start_timestamp current_time <<< "$output1"
-    # Remove leading zeros from the variable "month"
+    # Remove leading zeros from the variables
     month=${month#0}
+    day=${day#0}
 
-    output2=$(date -d "${year}/12/28" "+%s/%U/%V")
+    if [[ -z "${test_date}" ]]; then
+        output2=$(date -d "${year}/12/28" "+%s/%U/%V")
+    else
+        output2=$(date -d "$(date -d "${test_date}" "+%Y")/12/28" "+%s/%U/%V")
+    fi
     read last_day_timestamp total_weeks_ansi total_weeks_iso <<< "$output2"
     unset IFS
 
     current_date="${year}/${month}/${day}"
     locale_fmt=$(locale -k LC_TIME | grep ^d_fmt | cut -d= -f2 | tr -d '"' | sed -e 's/y/Y/')
     first_weekday=$(locale -k LC_TIME | grep ^first_weekday | cut -d= -f2 | tr -d '"')
-    current_date_formatted=$(date "+${locale_fmt}")
-    
+    if [[ -z "${test_date}" ]]; then
+        current_date_formatted=$(date "+${locale_fmt}")
+    else
+        current_date_formatted=$(date -d "${test_date}" "+${locale_fmt}")
+    fi
+
     if [[ ! -e ${SCRIPTPATH}/.deadline ]]; then
         touch ${SCRIPTPATH}/.deadline
     fi
@@ -88,8 +107,12 @@ dcal() {
     fi
 
     if [ $first_weekday -eq 2 ]; then
-        current_week=${current_week_iso}
         total_weeks=${total_weeks_iso}
+        if [[ "${month}" == "1" && "${day}" -le 3 && "$(date -d "${year}/01/01" "+%V")" != "01" ]]; then
+            current_week=0
+        else
+            current_week=${current_week_iso}
+        fi
         # Check if December 31 is in the first week of the next year and adjust the week number accordingly
         if [[ "$(date -d "${year}/12/31" "+%V")" == "01" ]]; then
             total_weeks=$((total_weeks + 1))
@@ -170,6 +193,16 @@ dcal() {
         printf "${alert}${MSG['overdue']}: %s${reset}\n" "$days"
     fi
 
+    # Split end_date into year, month, and day
+    IFS="/" read end_year end_month end_day <<< "$end_date"
+
+    # Add leading zeros to month and day if they are single digits
+    printf -v end_month '%02d' "$end_month"
+    printf -v end_day '%02d' "$end_day"
+
+    # Combine year, month, and day into the new end_date
+    end_date="${end_year}/${end_month}/${end_day}"
+
     # Straight line
     echo -ne "$color_line"
     printf '%.s─' $(seq 1 $(tput cols))
@@ -238,6 +271,7 @@ dcal() {
 
     # Print the calendar
     printf '%s\n%s\n%s\n' "$l0" "$l1" "$l2"
+    export TZ=$original_tz
 }
 
 # Set the deadline in the following format: YYYY/MM/DD
