@@ -12,11 +12,11 @@ source ${SCRIPTPATH}/calendar.sh
 OPT=""
 
 # Script version
-version="0.0.2-1"
+version="0.0.2-2"
 
 # getopts string
 # This string needs to be updated with the single character options (e.g. -f)
-opts="set"
+opts="-o d:s:v:h -l date:,set:,version,help"
 
 # Gets the command name without path
 cmd() { echo $(basename $0); }
@@ -39,6 +39,7 @@ Usage:
 ;
 Options:
 -h, --help; display this help
+-d, --date [YYYY/MM/DD]; set a current date
 -s, --set [YYYY/MM/DD]; set a deadline: if the optional argument is missing 
 ; or invalid, interactive mode is called
 -v, --version; display version
@@ -64,6 +65,12 @@ for pass in 1 2; do
             break
             ;;
         -*) case $1 in
+            -d | --date)
+              d="set"
+              shift
+              DATE="$1 $2"
+              shift 2
+              ;;
             -s | --set) s="set" ;;
             -v | --version) v="set" ;;
             -h | --help) usage && exit 0 ;;
@@ -89,7 +96,18 @@ for pass in 1 2; do
 done
 
 now=$(date "+%s")
-if [[ "$s" == "set" ]] && [[ $1 =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]] && [[ $(date -d "$1" "+%s") -gt $now ]]; then
+DATE_PART=$(echo $DATE | cut -d' ' -f1)
+TIME_PART=$(echo $DATE | cut -d' ' -f2)
+
+if [[ "$d" == "set" ]] && [[ $DATE_PART =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]]; then
+    if [[ -z $TIME_PART || $TIME_PART =~ ^[0-9]{2}:[0-9]{2}$ ]]; then
+      dcal "$DATE_PART $TIME_PART"
+    else
+      dcal "$DATE_PART"
+    fi
+    unset d
+    exit 0
+elif [[ "$s" == "set" ]] && [[ ${1} =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]] && [[ $(date -d "${ARGS}" "+%s") -gt $now ]]; then
     set_dcal $1
     unset s
     exit 0

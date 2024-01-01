@@ -57,8 +57,12 @@ dcal() {
     original_tz=$TZ
     export TZ=UTC
 
-    # NOTE: For testing purposes only:
-    test_date=""  # Assign your test date here in the format "YYYY-MM-DD HH:MM" to set the current date
+    # Positioning the current date to arbitrary value
+    test_date="$1"
+    echo "$test_date"
+    if ! date -d "$test_date" >/dev/null 2>&1; then
+      test_date=""
+    fi
 
     if [[ -z "${test_date}" ]]; then
         output1=$(date "+%Y/%m/%d/%j/%U/%V/%A/%s/%X")
