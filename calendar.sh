@@ -58,7 +58,7 @@ dcal() {
     export TZ=UTC
 
     # NOTE: For testing purposes only:
-    test_date="2027-12-31 01:30"  # Assign your test date here in the format "YYYY-MM-DD HH:MM" to set the current date
+    test_date=""  # Assign your test date here in the format "YYYY-MM-DD HH:MM" to set the current date
 
     if [[ -z "${test_date}" ]]; then
         output1=$(date "+%Y/%m/%d/%j/%U/%V/%A/%s/%X")
