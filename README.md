@@ -148,7 +148,7 @@ OpenHolidaysAPI: https://www.openholidaysapi.org/
 ## Usage/Examples
 
 ```bash
-dline -a 2024/07/04 3 Buy milk!
+dline -a 2024/07/04 3 Buy milk
 ```
 - Adding a new event (`yyyy/mm/dd x desc`), where `x` is the category code, `desc` is an arbitrary description with a special case where the description may start with `hh:mm` time format (which will eventually trigger a scheduled reminder as a popup) and may end with any hashtag (e.g. `#projectX`) for easier event handling related to a single topic.
 
