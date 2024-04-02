@@ -143,7 +143,7 @@ With the right setup, dLine could integrate with your Google Calendar. By aligni
 ### Credits:
 
 ```
-OpenHolidaysAPI: https://www.openholidaysapi.org/
+OpenHolidaysAPI: https://github.com/openpotato/openholidaysapi.website
 ```
 ## Usage/Examples
 
