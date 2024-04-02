@@ -1,2 +1,5 @@
-.deadline
 .dlinerc
+*settings.json
+*.tsv
+*.txt
+tmp*

@@ -1,0 +1,26 @@
+{
+    "categories": {
+        "0": {"name": "Resolved", "color": "color_resolved", "bullet": "bullet_resolved", "range": 0, "show": 1},
+        "1": {"name": "Deadline", "color": "color_deadline", "bullet": "bullet_deadline", "range": 0, "show": 1},
+        "2": {"name": "Work", "color": "color_work", "bullet": "bullet_work", "range": 1, "show": 1},
+        "3": {"name": "Personal", "color": "color_personal", "bullet": "bullet_personal", "range": 1, "show": 1},
+        "4": {"name": "Birthday & Anniversary", "color": "color_birthday", "bullet": "bullet_birthday", "range": 0, "show": 1},
+        "5": {"name": "Public Holiday", "color": "color_public_holiday", "bullet": "bullet_public_holiday", "range": 1, "show": 1},
+        "6": {"name": "Vacation", "color": "color_vacation", "bullet": "bullet_vacation", "range": 1, "show": 1},
+        "7": {"name": "Sick Leave", "color": "color_sick_leave", "bullet": "bullet_sick_leave", "range": 1, "show": 1},
+        "8": {"name": "School Holiday", "color": "color_school_holiday", "bullet": "bullet_school", "range": 1, "show": 1}
+    },
+    "reminders": [],
+    "verbose": 1,
+    "legend": 1,
+    "school": 0,
+    "scheduled_cleanup": 0,
+    "oha_imported": "",
+    "oha_country_iso": "",
+    "oha_language_iso": "",
+    "oha_subdivision_iso": "",
+    "gca_skip": 0,
+    "gca": [],
+    "process_overdues": 0,
+    "active_file": ""
+}

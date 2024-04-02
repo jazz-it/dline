@@ -1,9 +1,218 @@
 #!/usr/bin/env bash
+declare -A MSG
+declare -A defaults
+declare -A report_workday
+declare -A report_weekend
+
+# NOTE: Configuration settings
+# If you would like to translate the output to your own language
+# copy/paste the content below into the new file called `.dlinerc`
+# and place it into the same directory with this script.
+# The file will be ignored from git, so you could freely edit all the values
+# from the associative array $MSG within the `.dlinerc` file which will override 
+# all the default values below.
+
+MSG['progress']="Progress"
+MSG['day']="Day"
+MSG['week']="Week"
+MSG['today']="Today"
+MSG['time']="Time"
+MSG['day_singular']="day"
+MSG['day_plural']="days"
+
+MSG['days_until_the']="days until the"
+MSG['until_the']="until the"
+MSG['new_year']="New Year"
+
+MSG['workdays_left']="workdays left"
+MSG['days_until_deadline']="days until deadline"
+MSG['until_deadline']="until deadline"
+MSG['happy_new_year']="We made it! ☃️"
+MSG['soon']="Hurry up! 😊"
+MSG['overdue']="Time overdue (in days)"
+
+MSG['date_format']="YYYY/MM/DD"
+MSG['default_desc']="11:30 Lunch with Lucy"
+MSG['new_date']="New event date"
+MSG['new_date_zsh']="New event date [%B%F{yellow}${MSG['date_format']}%f]: "
+MSG['new_desc']="Event description"
+MSG['new_desc_zsh']="Event description [%B%F{yellow}${MSG['default_desc']}%f]: "
+MSG['start_date']="Start date"
+MSG['start_date_zsh']="Start date [%B%F{yellow}${MSG['date_format']}%f]: "
+MSG['end_date']="End date"
+MSG['end_date_zsh']="End date [%B%F{yellow}${MSG['date_format']}%f]: "
+
+# Color configuration could be also altered within .dlinerc
+alert="\033[38;5;167m"                              # Orange
+effect_blink="\033[5m"                              # Blinking text
+effect_crossed_out="\033[9m"                        # Crossed-out text
+color_header="\033[38;5;109m"                       # Bright Blue
+color_past_dates="\033[38;5;67m"                    # Dark Cyan
+color_past_months="\033[38;5;109m"                  # Bright Blue
+color_today="\033[38;5;233;48;5;67m"                # Dark Cyan background with Black text
+color_future_dates="\033[0;30m"                     # Black
+color_weekends="\033[38;5;240m"                     # Gray
+color_current_month="\033[1;38;5;67m"               # Bright Cyan
+color_line_highlight="\033[38;5;239m"               # Dark Gray
+color_line="\033[0;30m"                             # Black
+color_resolved_cal="\033[38;5;246;48;5;236m"        # Gray background with Light Gray text
+color_deadline_cal="\033[38;5;233;48;5;131m"        # Dark Magenta background with Black text
+color_work_cal="\033[38;5;233;48;5;173m"            # Orange background with Black text
+color_personal_cal="\033[38;5;233;48;5;101m"        # Dark Red background with Black text
+color_birthday_cal="\033[38;5;233;48;5;66m"         # Bright Blue background with Black text
+color_public_holiday_cal="\033[38;5;96m"            # Dark Cyan
+color_school_holiday_cal="\033[38;5;139m"           # Dark Magenta
+color_school_holiday_cal_parent="\033[38;5;102m"    # Dark Gray
+color_vacation_cal="\033[38;5;139m"                 # Dark Magenta
+color_sick_leave_cal="\033[38;5;96m"                # Dark Cyan
+color_resolved="\033[38;5;243m"                     # Dark Gray
+color_deadline="\033[38;5;167m"                     # Orange
+color_work="\033[38;5;173m"                         # Orange
+color_personal="\033[38;5;143m"                     # Dark Yellow
+color_birthday="\033[38;5;66m"                      # Bright Blue
+color_public_holiday="\033[38;5;96m"                # Dark Cyan
+color_school_holiday="\033[38;5;139m"               # Dark Magenta
+color_vacation="\033[38;5;139m"                     # Dark Magenta
+color_sick_leave="\033[38;5;96m"                    # Dark Cyan
+reset="\033[0m"                                     # Reset color
+green="\033[0;32m"                                  # Green
+yellow="\033[0;33m"                                 # Yellow
+
+bullet_resolved="\xe2\x9c\x93"
+bullet_deadline="\xe2\x96\xa3"
+bullet_work="\xe2\x97\x8f"
+bullet_personal="\xe2\x97\x8f"
+bullet_birthday="\xe2\x97\x8f"
+bullet_public_holiday="\xe2\x98\x85"
+bullet_vacation="\xe2\x98\x85"
+bullet_sick_leave="\xe2\x96\xbd"
+bullet_school="\xe2\x97\x86"
+
+# Default time span for the next entry
+DEFAULT_DAYS_AHEAD=28
+# Default setting in months to determine when to trigger the next cleanup
+# Set to 0 for 'never perform automatic cleanup'
+DEFAULT_CLEANUP_FREQUENCY=6
+# Set a max. length that should be used for printing a calendar
+MAX_LINE_LENGTH=92
+# Hide past events in monthly details (Dynamic View)
+HIDE_PAST_EVENTS=0
+# Hide future events in monthly details (Dynamic View)
+HIDE_FUTURE_EVENTS=0
+
+# --- Don't modify anything below this line ---
+
+assign_globals() {
+    last_overdue_date=${defaults["process_overdues"]}
+    last_scheduled_date=${defaults["scheduled_cleanup"]}
+    oha_last_imported=${defaults["oha_imported"]}
+    oha_country_iso=${defaults["oha_country_iso"]}
+    oha_language_iso=${defaults["oha_language_iso"]}
+    oha_subdivision_iso=${defaults["oha_subdivision_iso"]}
+    gca_skip=${defaults["gca_skip"]}
+    verbose=${defaults["verbose"]}
+    school=${defaults["school"]}
+    legend=${defaults["legend"]}
+}
+
+
 SCRIPTPATH="$(
     cd -- "$(dirname "$0")" >/dev/null 2>&1
     pwd -P
 )"
-source ${SCRIPTPATH}/calendar.sh
+
+# Check if the file .dlinerc exists and source it if possible
+CONF="${SCRIPTPATH}/.dlinerc"
+if [ -f "$CONF" ]; then
+    source ${CONF}
+fi
+
+UTILS="src/utils"
+DATA="src/data"
+API="src/api"
+default_filename="events_data.txt"
+default_log="settings.json"
+default_tsv="events_data.tsv"
+
+CONFIG_FILE=${SCRIPTPATH}/${DATA}/defaults.json
+ICON_FILE=${SCRIPTPATH}/${DATA}/dline_icon.png
+TSV_FILE=${SCRIPTPATH}/${DATA}/${default_tsv}
+DEFAULT_SETTINGS=${SCRIPTPATH}/${DATA}/${default_log}
+SETTINGS=${DEFAULT_SETTINGS}
+
+# Check if the DEFAULT_SETTINGS is empty then initialize it
+if [[ ! -s $DEFAULT_SETTINGS ]]; then
+    cp ${CONFIG_FILE} ${DEFAULT_SETTINGS}
+fi
+
+LOCALE_FMT=$(locale -k LC_TIME | grep ^d_fmt | cut -d= -f2 | tr -d '"' | sed -e 's/y/Y/')
+
+current_date=$(date "+%Y/%m/%d %Y-%m-%d %H:%M")
+IFS=' ' read -r -a date_parts <<< "$current_date"
+
+TODAY=${date_parts[0]}
+current_date_dd=${date_parts[1]}
+CURRENT_TIME=${date_parts[2]}
+current_year=${TODAY:0:4}
+next_year=$((current_year + 1))
+next2_year=$((current_year + 2))
+
+REMINDERS_SET=0  # Initialize a flag
+REMINDER_DESC="" # Insert the bell icon into description
+num_gca=0 # Number of imported Google Calendars
+num_reminders=0 # Number of reminders
+num_categories=0 # Number of categories
+# Get current year and next year
+
+# Pass for the dcal function that combines several modes of operation
+ENFORCE="69kyI1l4FmC"
+CUSTOM_RANGE_KEY="u2XtbEVsfR"
+mode=""
+
+# Global variable to store all expired events
+lines=""
+# Regular expression for date validation (format: YYYY-MM-DD)
+date_regex="^[0-9]{4}/[0-9]{2}/[0-9]{2}$"
+
+source ${SCRIPTPATH}/${UTILS}/_model.sh
+source ${SCRIPTPATH}/${UTILS}/_controller.sh
+source ${SCRIPTPATH}/${UTILS}/_view.sh
+
+# Set the "active_file" from the default JSON file only
+json=$(jq -r '.' "${DEFAULT_SETTINGS}")
+defaults["active_file"]=$(echo "$json" | jq -r ".active_file")
+
+# Initialize the file for user's data
+INPUT_FILE=${SCRIPTPATH}/${DATA}/${default_filename}
+filename_from_json=${SCRIPTPATH}/${DATA}/${defaults["active_file"]}
+if [[ "${defaults["active_file"]}" != "" ]]; then
+    INPUT_FILE="${filename_from_json}"
+else
+    jq --arg file "${default_filename}" '.active_file = $file' ${DEFAULT_SETTINGS} > tmp.$$.json && mv tmp.$$.json ${DEFAULT_SETTINGS}
+fi
+
+if [[ ! -e ${INPUT_FILE} ]]; then
+    touch ${INPUT_FILE}
+fi
+
+length=${#default_filename}
+if [[ "${default_filename}" != "${defaults["active_file"]}" ]]; then
+    length=$((length+1))  # account for the "_" character
+fi
+prefix="${defaults["active_file"]:0:$((${#defaults["active_file"]}-length))}"
+if [[ "${prefix}" != "" ]]; then
+    SETTINGS="${SCRIPTPATH}/${DATA}/${prefix}_${default_log}"
+    TSV_FILE="${SCRIPTPATH}/${DATA}/${prefix}_${default_tsv}"
+fi
+# Check if the DEFAULT_SETTINGS is empty then initialize it
+if [[ ! -s $SETTINGS ]]; then
+    cp ${CONFIG_FILE} ${SETTINGS}
+    # Delete "active_file" from the non-default JSON files
+    jq 'del(.active_file)' ${SETTINGS} > temp.json && mv temp.json ${SETTINGS}
+fi
+
+parse_json
+assign_globals
 
 # NOTE: This requires GNU getopt. On Mac OS X and FreeBSD, you have to install this
 # separately.
@@ -12,14 +221,21 @@ source ${SCRIPTPATH}/calendar.sh
 OPT=""
 
 # Script version
-version="0.0.2-2"
+version="0.1.7-3"
 
 # getopts string
 # This string needs to be updated with the single character options (e.g. -f)
-opts="-o d:s:v:h -l date:,set:,version,help"
+opts="-o a:b:c:d:e:f:i:l:k:m:o:p:r:s:t:u:v:h:w:x -l add:,base,cleanup,delete:,export,filter:,import:,legend,kill,month:,open,print-details,resolve,shool:,test:,update:,version,help,workdays:,xdg-open"
 
 # Gets the command name without path
 cmd() { echo $(basename $0); }
+
+# Prints an error message
+error() {
+    echo "`cmd`: Extra arguments -- $*"
+    echo "Try `cmd` -h' for more information."
+    exit 1
+}
 
 # Help command output
 usage() {
@@ -28,29 +244,55 @@ usage() {
     # Use the read command to split the output into separate variables
     read year month day <<< "$output1"
     unset IFS
-    printf -v day_zero '%02d' "$day"
-    printf -v month_zero '%02d' "$month"
     echo "\
-
 Usage:
- `cmd` -s; set a deadline through interactive mode
- `cmd` -s ${year}/${month_zero}/${day_zero}; set a deadline directly
- `cmd`; display a calendar
+ `cmd` -a; Add event (interactive mode)
+ `cmd` -a ${year}/${month}/${day} 3 \"11:30 Lunch with Lucy\"; Add event directly
+ `cmd`; Show current month calendar
 ;
 Options:
--h, --help; display this help
--d, --date [YYYY/MM/DD]; set a current date
--s, --set [YYYY/MM/DD]; set a deadline: if the optional argument is missing 
-; or invalid, interactive mode is called
--v, --version; display version
+ -a, --add [yyyy/mm/dd] [x] [desc]; Add event. No args invokes interactive mode
+ -b, --base; Manage your data, as snapshots of your changes
+ ; (file management)
+ -c, --clean; Remove old entries
+ -d, --delete [GCA|OHA|pattern]; Delete imported calendars, or local matching entries.
+ -e, --export; Export calendar to TSV format
+ -f, --filter [x] [x] ...; Toggle visibility of one or more categories
+ -h, --help; Show help
+ -i, --import [TSV|GCA|OHA]; Import events from external sources
+ -k, --kill; Terminate pending reminders
+ -l, --legend; Toggle legend display
+ -m, --month [yyyy/mm]; Show monthly calendar
+ -o, --open; Open data file in terminal editor
+ -p, --print-details; Toggle calendar details
+ -r, --resolve; Interactive dialogue to resolve deadlines
+ -s, --school [0|1]; Set school holidays as work days (0) or holidays (1)
+ -t, --test [yyyy/mm/dd]; Set \"today\" for testing
+ -u, --update [GCA|OHA] | [pattern] [yyyy/mm/dd] [x] [desc]; Update from APIs or local matching entries
+ -v, --version; Show version
+ -w, --workdays [start_date] [end_date]; Calculate workdays from optional start_date
+ ; (default: today) to end_date
+ -x, --xdg-open; Open data file in GUI editor
 " | column -t -s ";"
+
+    echo
+    echo "Event categories [x]:"
+    view_categories | sed 's/^/ /'
 }
+
 
 # Error message
 error() {
     echo "`cmd`: invalid option -- '$1'"
-    echo "Try `cmd` -h' for more information."
+    echo "Try '`cmd` -h' for more information."
     exit 1
+}
+
+# Sort the input file
+sort_input() {
+    # Remove duplicate lines, empty lines and sort the file
+    sort -u -o $INPUT_FILE $INPUT_FILE
+    sed -i '/^$/d' $INPUT_FILE
 }
 
 # There's two passes here. The first pass handles the long options and
@@ -65,14 +307,153 @@ for pass in 1 2; do
             break
             ;;
         -*) case $1 in
-            -d | --date)
+            -b | --clean) b="set" ;;
+            -c | --clean) c="set" ;;
+            -d | --delete)
               d="set"
               shift
-              DATE="$1 $2"
-              shift 2
+              PATTERN="$1"
+              case "${PATTERN^^}" in
+                  "GCA"|"OHA")
+                      if [ -n "$2" ]; then
+                          error "$@"
+                      fi
+                      ;;
+                  *)
+                      if [ -z "$PATTERN" ]; then
+                          error "$PATTERN"
+                      fi
+                      ;;
+              esac
               ;;
-            -s | --set) s="set" ;;
+            -e | --export) e="set" ;;
+            -f | --filter)
+              f="set"
+              CODES=()
+              shift
+              # If no arguments provided after -f
+              if [[ "$1" == -* || -z "$1" ]]; then
+                  toggle_show
+                  error "missing event category key"
+              else
+                  while (( "$#" )); do
+                  CODE="$1"
+                  if [[ -n ${CODE} ]]; then
+                      if [[ -z ${defaults["categories[${CODE}][name]"]} ]]; then
+                      error "invalid category: ${CODE}"
+                      else
+                      # Store the valid categories in an array
+                      CODES+=("$CODE")
+                      fi
+                  fi
+                  shift
+                  done
+              fi
+              ;;
+            -t | --test)
+              t="set"
+              shift
+              DATE_PART=${1}
+              shift
+              TIME_PART=${2}
+              if [[ ! ${DATE_PART} =~ ${date_regex} ]] || [[ -n $TIME_PART && ! $TIME_PART =~ ^[0-9]{2}:[0-9]{2}$ ]]; then
+                  # if [[ -n $TIME_PART && ! $TIME_PART =~ ^[0-9]{2}:[0-9]{2}$ ]]; then echo "TRUE"; else echo "FALSE"; fi
+                  error "${DATE_PART} ${TIME_PART}"
+              fi
+              ;;
+            -a | --add)
+              a="set"
+              shift
+              DLINE="$1"
+              shift
+              CODE="$1"
+              shift
+              NEW_LINE="$@"
+              now=$(date -d "today 00:00:00" "+%s")
+              if [[ -n "${DLINE}" ]] && [[ ! "${DLINE}" =~ ${date_regex} || $(date -d "${DLINE}" "+%s") -lt $now ]] || ! ( [[ -z "${DLINE}" && -z "${CODE}" && -z "${NEW_LINE}" ]] || [[ -n "${DLINE}" && -n "${CODE}" && -n "${NEW_LINE}" ]] ); then
+                if [[ $(date -d "${DLINE}" "+%s") -lt $now ]]; then
+                    error "Adding events in the past?"
+                elif [[ -n ${defaults["categories[$CODE][name]"]} ]]; then
+                    error "Invalid category: ${CODE}"
+                fi
+                error "${DLINE} ${CODE} ${NEW_LINE}"
+              fi
+              ;;
+            -i | --import)
+              i="set"
+              shift
+              TYPE="$1"
+              case "${TYPE^^}" in
+                  "TSV"|"GCA"|"OHA")
+                      ;;
+                  *)
+                      error "$TYPE"
+                      ;;
+              esac
+              ;;
+            -l | --legend) l="set" ;;
+            -k | --kill) k="set" ;;
+            -m | --month)
+              m="set"
+              shift
+              MONTH="$1"
+              if [[ ! ${MONTH} =~ ^[0-9]{4}\/[0-9]{2}$ ]]; then
+                  error "$MONTH"
+              fi
+              ;;
+            -u | --update)
+              u="set"
+              shift
+              PATTERN="$1"
+              case "${PATTERN^^}" in
+                  "GCA"|"OHA")
+                      if [ -n "$2" ]; then
+                          error "$@"
+                      fi
+                      ;;
+                  *)
+                      shift
+                      NEW_LINE="$@"
+                      if [ -z "$PATTERN" ] || [ -z "$NEW_LINE" ]; then
+                          error "$PATTERN" "$NEW_LINE"
+                      fi
+                      ;;
+              esac
+              ;;
+            -o | --open) o="set" ;;
+            -p | --print-details) p="set" ;;
+            -r | --resolve) r="set" ;;
+            -s | --school)
+              s="set"
+              shift
+              STUDENT_PARENT="$1"
+              if [[ -n $STUDENT_PARENT ]]; then
+                if [[ $STUDENT_PARENT -ne 0 && $STUDENT_PARENT -ne 1 ]]; then
+                    error "invalid argument: ${STUDENT_PARENT}, expected 0 or 1"
+                fi
+              else
+                # When calling the function with no parameters, 
+                # it just displays the visibility of all categories
+                toggle_school
+                error "Do you take a break during School Holidays? Set 1 for yes, or 0 for no."
+              fi
+              ;;
+            -w | --workdays)
+              w="set"
+              shift
+              END_DATE="${1}"
+              shift
+              START_DATE="${1}"
+              if [[ ! ${END_DATE} =~ ${date_regex} ]] || [[ -n $START_DATE && ! $START_DATE =~ ${date_regex} ]]; then
+                error "${END_DATE} ${START_DATE}"
+              elif [[ -n ${END_DATE} && -n ${START_DATE} && $START_DATE =~ ${date_regex} && $END_DATE =~ ${date_regex} ]]; then
+                temp_date=${START_DATE}
+                START_DATE=${END_DATE}
+                END_DATE=${temp_date}
+              fi
+              ;;
             -v | --version) v="set" ;;
+            -x | --xdg-open) x="set" ;;
             -h | --help) usage && exit 0 ;;
             --*) error $1 ;;
             -*) if [ $pass -eq 1 ]; then
@@ -95,34 +476,153 @@ for pass in 1 2; do
     fi
 done
 
-now=$(date "+%s")
-DATE_PART=$(echo $DATE | cut -d' ' -f1)
-TIME_PART=$(echo $DATE | cut -d' ' -f2)
-
-if [[ "$d" == "set" ]] && [[ $DATE_PART =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]]; then
+# Handle positional arguments
+if [[ "$t" == "set" ]] && [[ $DATE_PART =~ ${date_regex} ]]; then
     if [[ -z $TIME_PART || $TIME_PART =~ ^[0-9]{2}:[0-9]{2}$ ]]; then
       dcal "$DATE_PART $TIME_PART"
     else
       dcal "$DATE_PART"
     fi
+    unset t
+    exit 0
+elif [[ "$a" == "set" ]]; then
+    set_dcal "$DLINE" "$CODE" "$NEW_LINE"
+    sort_input
+    unset a
+    exit 0
+elif [[ "$b" == "set" ]]; then
+    base
+    unset b
+    exit 0
+elif [[ "$i" == "set" ]]; then
+    case "${TYPE^^}" in
+        "TSV")
+            import_from_tsv
+            ;;
+        "GCA")
+            [[ ${src_gca} -eq 0 ]] && source ${SCRIPTPATH}/${API}/gca.sh
+            src_gca=1
+            gca_init "IMPORT"
+            ;;
+        "OHA")
+            [[ ${src_oha} -eq 0 ]] && source ${SCRIPTPATH}/${API}/oha.sh
+            src_oha=1
+            source ${SCRIPTPATH}/${API}/oha.sh
+            oha "IMPORT"
+            update_api_date_log
+            ;;
+        *)
+            error "$TYPE"
+            ;;
+    esac
+    sort_input
+    unset i
+    exit 0
+elif [[ "$l" == "set" ]]; then
+    toggle_legend
+    unset l
+    exit 0
+elif [[ "$k" == "set" ]]; then
+    kill_all_pids
+    unset k
+    exit 0
+elif [[ "$m" == "set" ]] && [[ ${MONTH} =~ ^[0-9]{4}\/[0-9]{2}$ ]]; then
+    dcal "${MONTH}"
+    unset m
+    exit 0
+elif [[ "$c" == "set" ]]; then
+    delete_line "${ENFORCE}"
+    sort_input
+    unset c
+    exit 0
+elif [[ "$d" == "set" ]]; then
+    case "${PATTERN^^}" in
+        "GCA")
+            [[ ${src_gca} -eq 0 ]] && source ${SCRIPTPATH}/${API}/gca.sh
+            src_gca=1
+            delete_gca_json
+            ;;
+        "OHA")
+            [[ ${src_oha} -eq 0 ]] && source ${SCRIPTPATH}/${API}/oha.sh
+            src_oha=1
+            delete_oha
+            echo
+            ;;
+        *)
+            delete_line "${PATTERN}"
+            ;;
+    esac
+    sort_input
     unset d
     exit 0
-elif [[ "$s" == "set" ]] && [[ ${1} =~ ^[0-9]{4}\/[0-9]{2}\/[0-9]{2}$ ]] && [[ $(date -d "${ARGS}" "+%s") -gt $now ]]; then
-    set_dcal $1
-    unset s
+elif [[ "$e" == "set" ]]; then
+    export_to_tsv
+    unset e
     exit 0
-elif [[ "$s" == "set" ]]; then
-    set_dcal
+elif [[ "$f" == "set" ]]; then
+    toggle_show ${CODES[@]}
+    unset f
     exit 0
-# Handle positional arguments
+elif [[ "$u" == "set" ]]; then
+    case "${PATTERN^^}" in
+        "GCA")
+            [[ ${src_gca} -eq 0 ]] && source ${SCRIPTPATH}/${API}/gca.sh
+            src_gca=1
+            gca_init "UPDATE"
+            ;;
+        "OHA")
+            [[ ${src_oha} -eq 0 ]] && source ${SCRIPTPATH}/${API}/oha.sh
+            src_oha=1
+            oha "UPDATE"
+            update_api_date_log
+            ;;
+        *)
+            update_line "$PATTERN" "$NEW_LINE"
+            ;;
+    esac
+    sort_input
+    unset u
+    exit 0
 elif [[ "$v" == "set" ]]; then
     echo "`cmd`: Version $version"
+    unset v
     exit 0
-# Handle positional arguments
+elif [[ "$w" == "set" ]]; then
+    if [[ -z $START_DATE ]]; then
+        START_DATE=$TODAY
+    fi
+    dcal "$START_DATE $END_DATE" "$CUSTOM_RANGE_KEY"
+    unset w
+    exit 0
+elif [[ "$o" == "set" ]]; then
+    # Check if the EDITOR variable is set
+    if [[ -z "$EDITOR" ]]; then
+        echo "The EDITOR environment variable is not set. Please set it to your preferred text editor."
+        echo
+        exit 1
+    fi
+    # Open the file in the default editor
+    $EDITOR ${INPUT_FILE}
+    unset o
+    exit 0
+elif [[ "$p" == "set" ]]; then
+    toggle_print_details
+    unset p
+    exit 0
+elif [[ "$r" == "set" ]]; then
+    dcal "$TODAY $CURRENT_TIME" "$ENFORCE"
+    unset r
+    exit 0
+elif [[ "$s" == "set" ]]; then
+    toggle_school "$STUDENT_PARENT"
+    unset s
+    exit 0
+elif [[ "$x" == "set" ]]; then
+    xdg-open ${INPUT_FILE}
+    unset x
+    exit 0
 elif [ -n "$*" ]; then
-    echo "`cmd`: Extra arguments -- $*"
-    echo "Try `cmd` -h' for more information."
-    exit 1
+    error "$*"
 else
     # Run the main app when no arguments are passed
     dcal
