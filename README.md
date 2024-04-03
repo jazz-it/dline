@@ -1,7 +1,7 @@
 
 # dLine
 
-<img align="left" src="https://i.imgur.com/WbhVnb5.png" height="127" alt="Logo"> dLine is a versatile command-line tool that presents important data in the form of a calendar directly within your terminal. It monitors critical dates, simplifies event addition via APIs, and calculates timespans for various event types. 
+<img align="left" src="https://i.imgur.com/WbhVnb5.png" height="130" alt="Logo"> dLine is a versatile command-line tool that presents important data in the form of a calendar directly within your terminal. It monitors critical dates, simplifies event addition via APIs, and calculates timespans for various event types. 
 
 Designed for developers, dLine streamlines event management and schedule navigation without requiring you to leave the terminal.
 
