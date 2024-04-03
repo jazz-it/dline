@@ -130,7 +130,7 @@ https://salsa.debian.org/debian/at
 https://github.com/jqlang/jq
 ```
 
-### Optional Dependencies (recommended):
+#### Optional Dependencies (recommended):
 
 ```
 https://github.com/insanum/gcalcli
