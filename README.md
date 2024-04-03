@@ -128,23 +128,23 @@ Use `dline -f` and input the category codes you wish to view or hide (e.g. `dlin
 Clone the repository as usual and install the following projects prior to the very first run:
 
 ```
-at:  https://salsa.debian.org/debian/at
-jq:  https://github.com/jqlang/jq
-fzf: https://github.com/junegunn/fzf
+https://salsa.debian.org/debian/at
+https://github.com/jqlang/jq
 ```
 
 ### Optional Dependency (recommended):
 
 ```
-gcalcli: https://github.com/insanum/gcalcli
+https://github.com/insanum/gcalcli
+https://github.com/junegunn/fzf
+https://github.com/pyrho/hack-font-ligature-nerd-font
 ```
 With the right setup, dLine could integrate with your Google Calendar. By aligning your calendar categories with dLine's system, you can import events directly, making your schedule accessible locally or via Google Calendar, according to your preference. [Important resolution of a relevant issue](https://github.com/insanum/gcalcli/issues/674#issuecomment-1890388400).
 
 ### Credits:
 
-```
-OpenHolidaysAPI: https://github.com/openpotato/openholidaysapi.website
-```
+Holiday data based on [OpenHolidays API](https://www.openholidaysapi.org/)
+
 ## Usage/Examples
 
 ```bash
