@@ -777,7 +777,7 @@ view_monthly_events_details() {
         fi
 
         # Check if the event is today or tomorrow and has a valid time at the start of the description
-        validate_reminder "${date}" "$status" "${description}"
+        [[ $display_month -ne 1 ]] && validate_reminder "${date}" "$status" "${description}"
 
         if [[ ${show} -eq 1 ]]; then
             # Check if the date is in the first or second half of the month
