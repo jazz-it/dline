@@ -360,7 +360,10 @@ count_group_events() {
                     continue
                 fi
                 # Counter for off-duty weekdays
-                (( non_working_days++ ))
+                if [[ ! " ${non_working_dates[@]} " =~ " ${d_date} " ]]; then
+                    non_working_dates+=("$d_date")
+                    (( non_working_days++ ))
+                fi
             fi
         else
             # echo "$line : $day_of_week : Off"
@@ -562,7 +565,10 @@ get_next_deadline() {
                 if [[ "$d_date" == "$previous_date" ]]; then
                     continue
                 fi
-                (( non_working_days++ ))
+                if [[ ! " ${non_working_dates[@]} " =~ " ${d_date} " ]]; then
+                    non_working_dates+=("$d_date")
+                    (( non_working_days++ ))
+                fi
                 previous_date=$d_date
             fi
         fi
