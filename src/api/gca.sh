@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Specify your date range
-start_date=${TODAY////-}
-end_date="${next_year}-12-31"
-today=${start_date}
+_gca_start_date=${TODAY////-}
+_gca_end_date="${next_year}-12-31"
+today=${_gca_start_date}
 # Create temporary files
 tempfile=$(mktemp)
 temp_output=$(mktemp)
@@ -93,12 +93,12 @@ delete_gca_json() {
 # Update the entry from the $SETTINGS
 update_gca_json() {
     # If no existing entry is found, append the new entry to the reminders attribute in the $SETTINGS file
-    jq --arg name "${calendar_name}" --arg imported_date "${today}" --arg end_date "${end_date}" --arg category "${selected_code}" '
+    jq --arg name "${calendar_name}" --arg imported_date "${today}" --arg end_date "${_gca_end_date}" --arg category "${selected_code}" '
         if (.gca | map(select(.name == $name)) | length > 0)
         then
-            .gca |= map(if .name == $name then . + {imported_date: $imported_date, end_date: $end_date, category: $category} else . end)
+            .gca |= map(if .name == $name then . + {imported_date: $imported_date, end_date: $_gca_end_date, category: $category} else . end)
         else
-            .gca += [{name: $name, imported_date: $imported_date, end_date: $end_date, category: $category}]
+            .gca += [{name: $name, imported_date: $imported_date, end_date: $_gca_end_date, category: $category}]
         end
 ' "${SETTINGS}" > temp.json && mv temp.json "${SETTINGS}"
 }
@@ -196,9 +196,9 @@ import_gca() {
 
     # Get the events from gcalcli
     if [[ ${selectAll} -ne 1 ]]; then
-        events=$(gcalcli --calendar "${selected_calendar}" agenda --tsv "${start_date}" "${end_date}" | awk '{print $1, $2, substr($0, index($0, $5))}')
+        events=$(gcalcli --calendar "${selected_calendar}" agenda --tsv "${_gca_start_date}" "${_gca_end_date}" | awk '{print $1, $2, substr($0, index($0, $5))}')
     else
-        events=$(gcalcli agenda --tsv "${start_date}" "${end_date}" | awk '{print $1, $2, substr($0, index($0, $5))}')
+        events=$(gcalcli agenda --tsv "${_gca_start_date}" "${_gca_end_date}" | awk '{print $1, $2, substr($0, index($0, $5))}')
     fi
 
     # Process each line of the events
