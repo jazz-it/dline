@@ -627,7 +627,7 @@ view_report() {
         # Skip if no category name is returned
         if [[ -n $name ]]; then
             color=${defaults["categories[$i][color]"]}
-            if [[ $i -eq 8 && $shool -ne 1 ]]; then
+            if [[ $i -eq 8 && $school -ne 1 ]]; then
                 categories+=("${color_school_holiday_cal_parent}${name}${reset}")
                 numbers_workday+=("${color_school_holiday_cal_parent}$(add_thousand_separators ${report_workday[$i]:-0})${reset}")
                 numbers_weekend+=("${color_school_holiday_cal_parent}$(add_thousand_separators ${report_weekend[$i]:-0})${reset}")
