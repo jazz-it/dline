@@ -680,7 +680,7 @@ view_file() {
             fi
             ;;
         2)
-            # Check if bat is installed
+            # Check if fzf is installed
             if command -v fzf >/dev/null 2>&1; then
                 echo "Opening file '${prefix}${default_filename}' with fzf..."
                 cat "${SCRIPTPATH}/${DATA}/${prefix}${default_filename}" | fzf
@@ -689,7 +689,7 @@ view_file() {
             fi
             ;;
         3)
-            # Check if bat is installed
+            # Check if less is installed
             if command -v less >/dev/null 2>&1; then
                 echo "Opening file '${prefix}${default_filename}' with less..."
                 less "${SCRIPTPATH}/${DATA}/${prefix}${default_filename}"
