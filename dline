@@ -225,7 +225,7 @@ version="0.1.7-3"
 
 # getopts string
 # This string needs to be updated with the single character options (e.g. -f)
-opts="-o a:b:c:d:e:f:i:l:k:m:o:p:r:s:t:u:v:h:w:x -l add:,base,cleanup,delete:,export,filter:,import:,legend,kill,month:,open,print-details,resolve,shool:,test:,update:,version,help,workdays:,xdg-open"
+opts="-o a:b:c:d:e:f:i:l:k:m:o:p:r:s:t:u:v:h:w:x -l add:,base,cleanup,delete:,export,filter:,import:,legend,kill,month:,open,print-details,resolve,school:,test:,update:,version,help,workdays:,xdg-open"
 
 # Gets the command name without path
 cmd() { echo $(basename $0); }
