@@ -316,74 +316,77 @@ count_group_events() {
         }
     }')
 
-    # Iterate over the lines in the file
-    while IFS= read -r line; do
-        # Extract the date, status, and description from the line
-        local d_date=${line:0:10}
-        status=${line:11:1}
-        description=${line:13}
-
-        # Extract the year, month, and day from the date
-        local d_year=${d_date:0:4}
-        local d_month=$((10#${d_date:5:2}))
-        local d_day=$((10#${d_date:8:2}))
-
-        # Initialize month_zeller and year_zeller
-        local month_zeller=$d_month
-        local year_zeller=$d_year
-
-        # Adjust the month and year for Zeller's Congruence
-        if (( d_month < 3 )); then
-            month_zeller=$((d_month + 12))
-            year_zeller=$((d_year - 1))
-        fi
-
-        # Calculate the day of the week (6 for Saturday, 7 for Sunday)
-        day_of_week=$(( (d_day + 2*month_zeller + 3*(month_zeller + 1)/5 + year_zeller + year_zeller/4 - year_zeller/100 + year_zeller/400) % 7 + 1 ))
-
-        if [[ $day_of_week -lt 6 ]]; then
-            # Group Work day events
-            # echo "$line : $day_of_week : On"
-            if [[ "$d_date" < "$year/$month/$day" ]]; then
-                continue
+    # Handle ${INPUT_FILE} data unless it was empty
+    if [ -n "${sorted_lines}" ]; then
+        # Iterate over the lines in the file
+        while IFS= read -r line; do
+            # Extract the date, status, and description from the line
+            local d_date=${line:0:10}
+            status=${line:11:1}
+            description=${line:13}
+    
+            # Extract the year, month, and day from the date
+            local d_year=${d_date:0:4}
+            local d_month=$((10#${d_date:5:2}))
+            local d_day=$((10#${d_date:8:2}))
+    
+            # Initialize month_zeller and year_zeller
+            local month_zeller=$d_month
+            local year_zeller=$d_year
+    
+            # Adjust the month and year for Zeller's Congruence
+            if (( d_month < 3 )); then
+                month_zeller=$((d_month + 12))
+                year_zeller=$((d_year - 1))
             fi
-            report_workday["$status"]=$(( ${report_workday[$status]:-0}+1 ))
-            if [[ "${d_year}${d_month}${d_day}" > "${prev_year}${prev_month}${prev_day}" ]]; then
-                (( weekdays_with_events++ ))
-                prev_year="${d_year}"
-                prev_month="${d_month}"
-                prev_day="${d_day}"
-            fi
-            # Check if the status is 5, 6, 7, or 8
-            if [[ $status =~ [5-8] ]]; then
-                if [[ $status -eq 8 && $school -eq 0 ]]; then
+    
+            # Calculate the day of the week (6 for Saturday, 7 for Sunday)
+            day_of_week=$(( (d_day + 2*month_zeller + 3*(month_zeller + 1)/5 + year_zeller + year_zeller/4 - year_zeller/100 + year_zeller/400) % 7 + 1 ))
+    
+            if [[ $day_of_week -lt 6 ]]; then
+                # Group Work day events
+                # echo "$line : $day_of_week : On"
+                if [[ "$d_date" < "$year/$month/$day" ]]; then
                     continue
                 fi
-                # Counter for off-duty weekdays
-                if [[ ! " ${non_working_dates[@]} " =~ " ${d_date} " ]]; then
-                    non_working_dates+=("$d_date")
-                    (( non_working_days++ ))
+                report_workday["$status"]=$(( ${report_workday[$status]:-0}+1 ))
+                if [[ "${d_year}${d_month}${d_day}" > "${prev_year}${prev_month}${prev_day}" ]]; then
+                    (( weekdays_with_events++ ))
+                    prev_year="${d_year}"
+                    prev_month="${d_month}"
+                    prev_day="${d_day}"
+                fi
+                # Check if the status is 5, 6, 7, or 8
+                if [[ $status =~ [5-8] ]]; then
+                    if [[ $status -eq 8 && $school -eq 0 ]]; then
+                        continue
+                    fi
+                    # Counter for off-duty weekdays
+                    if [[ ! " ${non_working_dates[@]} " =~ " ${d_date} " ]]; then
+                        non_working_dates+=("$d_date")
+                        (( non_working_days++ ))
+                    fi
+                fi
+            else
+                # echo "$line : $day_of_week : Off"
+                # Group Weekend events
+                if [[ "$d_date" < "$year/$month/$day" ]]; then
+                    continue
+                fi
+                (( report_weekend["$status"]++ ))
+                if [[ "${d_year}${d_month}${d_day}" > "${prev_year}${prev_month}${prev_day}" ]]; then
+                    (( weekends_with_events++ ))
+                    prev_year="${d_year}"
+                    prev_month="${d_month}"
+                    prev_day="${d_day}"
+                fi
+                # Check if the status is 2
+                if [[ $status -eq 2 ]]; then
+                    (( working_days++ ))
                 fi
             fi
-        else
-            # echo "$line : $day_of_week : Off"
-            # Group Weekend events
-            if [[ "$d_date" < "$year/$month/$day" ]]; then
-                continue
-            fi
-            (( report_weekend["$status"]++ ))
-            if [[ "${d_year}${d_month}${d_day}" > "${prev_year}${prev_month}${prev_day}" ]]; then
-                (( weekends_with_events++ ))
-                prev_year="${d_year}"
-                prev_month="${d_month}"
-                prev_day="${d_day}"
-            fi
-            # Check if the status is 2
-            if [[ $status -eq 2 ]]; then
-                (( working_days++ ))
-            fi
-        fi
-    done < <(echo "${sorted_lines}")
+        done < <(echo "${sorted_lines}")
+    fi
 
     # Check if a future date was found
     # A future date was found
