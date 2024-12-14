@@ -200,4 +200,4 @@ Visualizing time is crucial in making the most of every moment and reaching your
 Attention, curious devs! We’ve hidden a harmless Easter Egg surprise in this project. No backdoors, promise! Hunt it down and earn a spot in our "Hall of Fame". Happy coding! 🚀
 
 ## Hall of Fame
-[James Cuzella (@trinitronx)] (https://github.com/trinitronx)
+[James Cuzella (@trinitronx)](https://github.com/trinitronx)
