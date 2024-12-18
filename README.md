@@ -155,13 +155,13 @@ Bash Version: dLine requires Bash 4.0 or newer. Older versions (e.g., Bash 3.x o
 
 If OpenHolidaysAPI doesn't support your country, you can still integrate holidays by:
 
-1. Creating a Google Calendar for public holidays in your region.
+1. Creating a [separate Google Calendar for public holidays](https://support.google.com/calendar/answer/13748345) in your region.
 
-2. Running dline --import GCA to sync it with dLine.
+2. Running `dline --import GCA` to sync it with dLine.
 
 3. Assigning the imported events to the “Public Holiday” category during the setup prompt.
 
-This process works for school holidays and other custom calendars too!
+This process works for School Holidays and other custom calendars too!
 
 
 ### Filtering Events with fzf
