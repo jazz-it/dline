@@ -1,29 +1,27 @@
 
 # dLine
 
-<img align="left" src="https://i.imgur.com/WbhVnb5.png" height="130" alt="Logo"> dLine is a versatile command-line tool that presents important data in the form of a calendar directly within your terminal. It monitors critical dates, simplifies event addition via APIs, and calculates timespans for various event types. 
+<img align="left" src="https://i.imgur.com/WbhVnb5.png" height="130" alt="Logo"> dLine is a simple and powerful command-line tool that brings your calendar directly to your terminal. You can track important dates, add events quickly using APIs, calculate timespans, and manage multiple calendars—all without leaving your terminal.
 
-Designed for developers, dLine streamlines event management and schedule navigation without requiring you to leave the terminal.
+Designed for developers, dLine makes managing your schedule smooth and efficient.
 
 ## Features
 
 ![Features](https://i.imgur.com/RphflCb.png)
 
 - Dynamic View:
-When you execute `dline` without any arguments, it promptly shows the events scheduled for the current month. Previous dates are shaded in blue, emphasizing future events. Event types are color-coded for easy identification, and icons provide visual cues. Additionally, you can swiftly hide specific categories to achieve a cleaner display—more details on this feature will follow. Events are neatly organized by week, with a clear separation between the first and second halves of the month.
-
-It's the default View and is named for its automated processes that operate in the background, independent of user input.
+Run `dline` without arguments to see the current month’s events at a glance. Past dates are shaded, future events are highlighted, and color-coded categories make it easy to navigate. You can even filter out categories for a cleaner view.
 
 - Static View:
-When you run `dline -m yyyy/mm`, it enters Static View mode. Unlike the more dynamic counterpart, Static View remains stationary, making it ideal for users who simply require a monthly calendar. In this mode, the calendar displays events for the selected month, following the same configuration as Dynamic View. However, it stands out with a no-header design, omitting any additional embellishments. Notably, past dates are not shaded, ensuring a consistent and uninterrupted view of the entire month.
+Use `dline -m yyyy/mm` to display a simple monthly calendar for any given month. Great for when you just need a clear snapshot without additional details.
 
 - Event Calculator View:
-If you require a rapid day count, simply input `dline -w` along with your specified date range. This command spares you the monotony of manual finger counting. dLine streamlines your life by categorizing events into weekdays and weekends, subsequently providing a summarized total. It’s the sort of arithmetic that computers handle effortlessly, yet proves frustratingly time-consuming for us humans—especially when calculating sick days or determining the number of holidays you can relish without work.
+Need to count workdays between two dates? `dline -w start_date end_date` does it for you, categorizing weekdays and weekends automatically.
 
 - Administration:
-Initiate File Management with a simple `dline -b` command. Think of "b" not just as "base", but as the branching point for your calendar configurations. Engage with the full spectrum of CRUD operations to craft and manage multiple calendar datasets. Whether you're part of an international team or freelancing across borders, switching contexts is seamless. And for those working globally, keeping track of Public Holidays across different countries is now just a few keystrokes away. Data Management in dLine is a suite of flags that enhance your control. Run `dline -h` to explore them. You'll find options to tackle overdue deadlines, initiate API imports, force updates, and manage your data with edit, delete, view, and clean commands. There's even a way to terminate all reminder processes.
+Easily manage your calendar datasets with `dline -b`. Add, delete, update, and clean your data as needed. Switching between multiple calendars or importing public holidays is simple. There's even a way to terminate all reminder processes.
 
-On its initial launch, dLine will prompt you to select your subregion. This allows it to fetch Public and School Holidays specific to your area.
+On the first launch, dLine will ask for your region to fetch relevant holidays. Don't worry — you can change this later if needed.
 
 ## Introduction on YouTube:
 [![Introduction to dLine](https://i.imgur.com/fH5OK6P.png)](https://www.youtube.com/shorts/aZMAY2oSTks)
@@ -120,10 +118,12 @@ Use `dline -f` and input the category codes you wish to view or hide (e.g. `dlin
 #### Data File:
 
 - `events_data.txt`: Default data file, but upon creation of a new calendar, a file with a prefix is added. It's possible to switch between the existing calendars by `dline -b` > `Select`.
+
+
 ## Installation
 
 #### Required Dependencies:
-Clone the repository as usual and install the following projects prior to the very first run:
+Before the first run, make sure you have:
 
 ```
 https://salsa.debian.org/debian/at
@@ -142,6 +142,32 @@ With the right setup, dLine could integrate with your Google Calendar. By aligni
 ### Credits:
 
 Holiday data based on [OpenHolidays API](https://www.openholidaysapi.org/)
+
+
+### Minimum Requirements:
+
+Bash Version: dLine requires Bash 4.0 or newer. Older versions (e.g., Bash 3.x on macOS) will not work correctly due to unsupported features like associative arrays.
+
+- To update Bash on macOS: Use Homebrew (`brew install bash`).
+
+
+### Holiday Data and Google Calendar Integration:
+
+If OpenHolidaysAPI doesn't support your country, you can still integrate holidays by:
+
+1. Creating a Google Calendar for public holidays in your region.
+
+2. Running dline --import GCA to sync it with dLine.
+
+3. Assigning the imported events to the “Public Holiday” category during the setup prompt.
+
+This process works for school holidays and other custom calendars too!
+
+
+### Filtering Events with fzf
+
+When using `dline -b`, select "View" and choose a dataset. If `fzf` is installed, it will be triggered, allowing you to filter entries interactively. For example, you can filter all meetings in June this year labeled with #projectX easily using this feature.
+
 
 ## Usage/Examples
 
@@ -194,10 +220,10 @@ dline -w 2024/01/01 2024/12/31
 
 ## Appendix
 
-Visualizing time is crucial in making the most of every moment and reaching your goals efficiently. Even small distractions derail productivity.
+Managing time effectively is key to productivity. dLine simplifies scheduling, so you can focus on what matters most.
 
 ## Easter Egg Alert
-Attention, curious devs! We’ve hidden a harmless Easter Egg surprise in this project. No backdoors, promise! Hunt it down and earn a spot in our "Hall of Fame". Happy coding! 🚀
+Attention devs! There's a hidden Easter Egg in this project. If you find it, let us know and get featured in our "Hall of Fame". Happy coding! 🚀
 
 ## Hall of Fame
 [James Cuzella (@trinitronx)](https://github.com/trinitronx)
