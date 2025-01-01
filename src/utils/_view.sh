@@ -488,11 +488,7 @@ print_month_line() {
 
     # Print the remaining part in the original color
     echo -ne "$color_line"
-    if [[ ${len_month} -gt 3 ]]; then
-        [[ $highlight_cols -lt $(( max_total_cols )) ]] && printf '%.s─' $(seq "$((highlight_cols + 2))" "$max_total_cols")
-    else
-        [[ $highlight_cols -lt $(( max_total_cols )) ]] && printf '%.s─' $(seq "$((highlight_cols + 1))" "$max_total_cols")
-    fi
+    [[ $highlight_cols -lt $(( max_total_cols )) ]] && printf '%.s─' $(seq "$((highlight_cols + 1))" "$((max_total_cols - 1))")
 
     # Print the month name
     echo -e "${reset} ${month_name^^}"
