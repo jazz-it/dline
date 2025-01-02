@@ -331,7 +331,6 @@ oha() {
     if [[ ${key^^} == "X" ]]; then
         return 0
     fi
-    oha_language_iso= # Trim spaces
     if [[ -z "$(echo "${oha_language_iso}" | xargs)" || "${1^^}" == "IMPORT" ]]; then
         input_language
         update_oha_language_log
