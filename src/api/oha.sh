@@ -237,6 +237,15 @@ export_public_holiday() {
 
 
 export_school_holiday() {
+    subdivision_isoCode="$(echo "${subdivision_isoCode}"  | xargs)"
+    if [[ -z "${subdivision_isoCode}" || "${subdivision_isoCode}" =~ ^0 ]]; then
+        subdivision_isoCode="${oha_subdivision_iso}"
+    fi
+    language_isoCode="$(echo "${language_isoCode}" | xargs)"
+    if [[ -z "${language_isoCode}" || "${language_isoCode}" =~ ^0 ]]; then
+        language_isoCode="${oha_language_iso}"
+    fi
+
     URL_school_holiday="https://openholidaysapi.org/SchoolHolidays?countryIsoCode=${key}&subdivisionCode=${subdivision_isoCode}&languageIsoCode=${language_isoCode}&validFrom=${current_year}-01-01&validTo=${next2_year}-12-31"
     TMP_FILE_SCHOOL_HOLIDAY="/tmp/dline_OHA_${key}_${subdivision_isoCode}_${language_isoCode}_${current_year}_school_holiday.json"
 
@@ -322,7 +331,8 @@ oha() {
     content_countries=$(cat "$TMP_FILE_COUNTRIES")
     content_languages=$(cat "$TMP_FILE_LANGUAGES")
 
-    if [[ -z "$(echo "${oha_country_iso}" | xargs)" || "${1^^}" == "IMPORT" ]]; then
+    oha_country_iso="$(echo "${oha_country_iso}" | xargs)"
+    if [[ -z "${oha_country_iso}" || "${oha_country_iso}" =~ ^0 || "${1^^}" == "IMPORT" ]]; then
         input_country
         update_oha_country_log
     else
@@ -331,13 +341,15 @@ oha() {
     if [[ ${key^^} == "X" ]]; then
         return 0
     fi
-    if [[ -z "$(echo "${oha_language_iso}" | xargs)" || "${1^^}" == "IMPORT" ]]; then
+    oha_language_iso="$(echo "${oha_language_iso}" | xargs)"
+    if [[ -z "${oha_language_iso}" || "${oha_language_iso}" =~ ^0 || "${1^^}" == "IMPORT" ]]; then
         input_language
         update_oha_language_log
     else
         language_key=$oha_language_iso
     fi
-    if [[ -z "$(echo "${oha_subdivision_iso}" | xargs)" || "${1^^}" == "IMPORT" ]]; then
+    oha_subdivision_iso="$(echo "${oha_subdivision_iso}" | xargs)"
+    if [[ -z "${oha_subdivision_iso}" || "${oha_subdivision_iso}" =~ ^0 || "${1^^}" == "IMPORT" ]]; then
         input_subdivisions
         update_oha_subdivision_log
     else

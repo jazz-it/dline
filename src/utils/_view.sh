@@ -460,7 +460,7 @@ print_line() {
         echo -ne "$color_line_highlight"
         printf '%.s─' $(seq 1 "$highlight_cols")
         echo -ne "$color_line"
-        printf '%.s─' $(seq "$((highlight_cols + 1))" "$total_cols")
+        printf '%.s─' $(seq "$((highlight_cols + 1))" "$(( total_cols - 1))")
         echo -e "$reset"
     fi
 }
