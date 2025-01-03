@@ -460,7 +460,7 @@ print_line() {
         echo -ne "$color_line_highlight"
         printf '%.s─' $(seq 1 "$highlight_cols")
         echo -ne "$color_line"
-        printf '%.s─' $(seq "$((highlight_cols + 1))" "$(( total_cols - 1))")
+        [[ $highlight_cols -lt $total_cols ]] && printf '%.s─' $(seq "$((highlight_cols + 1))" "$(( total_cols + (highlight_cols > 0 ? 0 : -1) ))")
         echo -e "$reset"
     fi
 }
@@ -480,7 +480,7 @@ print_month_line() {
     local max_total_cols=$((total_cols - len_month - 1))
     local highlight_cols=$((total_cols * $percent / 100))  # Calculate the number of columns to highlight
 
-    [[ $highlight_cols -gt $(( max_total_cols )) ]] && highlight_cols=$max_total_cols
+    [[ $highlight_cols -gt $max_total_cols ]] && highlight_cols=${max_total_cols}
 
     # Print the highlighted part
     echo -ne "$color_line_highlight"
