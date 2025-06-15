@@ -282,68 +282,77 @@ dcal() {
             continue
         fi
 
+        # DEBUG: Show current iteration values
+        [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: d=$d, day=$day, d_zero=$d_zero, a=$a, s=$s"
+
         if [[ $display_month -eq 1 ]]; then
             day=0
             end_date="1970/01/01"
         fi
         if [[ 10#$d -lt 10#$day ]]; then
             color="${color_past_dates}"
-        elif [[ 10#$d -gt 10#$day ]]; then
-            # Check if the deadline should be rendered for a given month
-            extract_status
-            if [[ $display_month -eq 1 ]] && [[ "$end_date_input" == "$year/$month_zero/$d_zero" || ( $status == "1" && ${defaults["categories[1][show]"]} -eq 1 ) ]]; then
-                color="${color_deadline_cal}"
-            fi
-            if [[ "$weekend_days" == *"$a"* ]]; then
-                [[ "$multi_event_day" == "$d_zero" ]] && continue
-                if [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "1" && ${defaults["categories[1][show]"]} -eq 1 ) ]]; then
-                    color=$(get_bg_color "${color_deadline_cal}")
-                elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "5" && ${defaults["categories[5][show]"]} -eq 1 ) ]]; then
-                    color="${color_public_holiday_cal}"
-                    multi_event_day="$d_zero"
-                elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "2" && ${defaults["categories[2][show]"]} -eq 1 ) ]]; then
-                    color=$(get_bg_color "${color_work_cal}")
-                elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "3" && ${defaults["categories[3][show]"]} -eq 1 ) ]]; then
-                    color=$(get_bg_color "${color_personal_cal}")
-                elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "4" && ${defaults["categories[4][show]"]} -eq 1 ) ]]; then
-                    color=$(get_bg_color "${color_birthday_cal}")
-                elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "0" && ${defaults["categories[0][show]"]} -eq 1 ) ]]; then
-                    color=$(get_bg_color "${color_resolved_cal}")
-                else
-                    color="${color_weekends}"
-                fi
-            elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "1" && ${defaults["categories[1][show]"]} -eq 1 ) ]]; then
-                color="${color_deadline_cal}"
-            elif [[ $passed_due_date -eq 0 ]] && [[ "$TODAY" == "$year/$month_zero/$d_zero" ]]; then
-                color="${color_today}"
-            elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "5" && ${defaults["categories[5][show]"]} -eq 1 ) ]]; then
-                color="${color_public_holiday_cal}"
-            elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "2" && ${defaults["categories[2][show]"]} -eq 1 ) ]]; then
-                color="${color_work_cal}"
-            elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "3" && ${defaults["categories[3][show]"]} -eq 1 ) ]]; then
-                color="${color_personal_cal}"
-            elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "4" && ${defaults["categories[4][show]"]} -eq 1 ) ]]; then
-                color="${color_birthday_cal}"
-            elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "6" && ${defaults["categories[6][show]"]} -eq 1 ) ]]; then
-                color="${color_vacation_cal}"
-            elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "7" && ${defaults["categories[7][show]"]} -eq 1 ) ]]; then
-                color="${color_sick_leave_cal}"
-            elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "8" && ${defaults["categories[8][show]"]} -eq 1 ) ]]; then
-                if [[ $school -eq 1 ]]; then
-                    color="${color_school_holiday_cal}"
-                else
-                    color="${color_school_holiday_cal_parent}"
-                fi
-            elif [[ -n $end_date ]] && [[ "$end_date" == "$year/$month_zero/$d_zero" || ( $status == "0" && ${defaults["categories[0][show]"]} -eq 1 ) ]]; then
-                color="${color_resolved_cal}"
-            else
-                color=""
-            fi
         else
-            if [[ $passed_due_date -eq 1 && ${defaults["categories[1][show]"]} -eq 1 ]]; then
-                color="${color_deadline_cal}"
+            # Call extract_status for every day to detect deadlines
+            extract_status
+
+            # DEBUG: output the values after running extract_status
+            [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: end_date=$end_date, status=$status, d_zero=$d_zero"
+
+            if [[ -n $end_date && "$end_date" == "$year/$month_zero/$d_zero" ]]; then
+                # A deadline exists for the current day – select color based on its status.
+                if [[ "$weekend_days" == *"$a"* ]]; then
+                    [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: In weekend branch for deadline on $d_zero ($a)"
+                    if [[ $status == "1" && ${defaults["categories[1][show]"]} -eq 1 ]]; then
+                        color=$(get_bg_color "${color_deadline_cal}")
+                    elif [[ $status == "5" && ${defaults["categories[5][show]"]} -eq 1 ]]; then
+                        color="${color_public_holiday_cal}"
+                        multi_event_day="$d_zero"
+                    elif [[ $status == "2" && ${defaults["categories[2][show]"]} -eq 1 ]]; then
+                        color=$(get_bg_color "${color_work_cal}")
+                    elif [[ $status == "3" && ${defaults["categories[3][show]"]} -eq 1 ]]; then
+                        color=$(get_bg_color "${color_personal_cal}")
+                    elif [[ $status == "4" && ${defaults["categories[4][show]"]} -eq 1 ]]; then
+                        color=$(get_bg_color "${color_birthday_cal}")
+                    elif [[ $status == "0" && ${defaults["categories[0][show]"]} -eq 1 ]]; then
+                        color=$(get_bg_color "${color_resolved_cal}")
+                    else
+                        color="${color_weekends}"
+                    fi
+                else
+                    if [[ $status == "1" && ${defaults["categories[1][show]"]} -eq 1 ]]; then
+                        color="${color_deadline_cal}"
+                    elif [[ $status == "5" && ${defaults["categories[5][show]"]} -eq 1 ]]; then
+                        color="${color_public_holiday_cal}"
+                    elif [[ $status == "2" && ${defaults["categories[2][show]"]} -eq 1 ]]; then
+                        color="${color_work_cal}"
+                    elif [[ $status == "3" && ${defaults["categories[3][show]"]} -eq 1 ]]; then
+                        color="${color_personal_cal}"
+                    elif [[ $status == "4" && ${defaults["categories[4][show]"]} -eq 1 ]]; then
+                        color="${color_birthday_cal}"
+                    elif [[ $status == "6" && ${defaults["categories[6][show]"]} -eq 1 ]]; then
+                        color="${color_vacation_cal}"
+                    elif [[ $status == "7" && ${defaults["categories[7][show]"]} -eq 1 ]]; then
+                        color="${color_sick_leave_cal}"
+                    elif [[ $status == "8" && ${defaults["categories[8][show]"]} -eq 1 ]]; then
+                        if [[ $school -eq 1 ]]; then
+                            color="${color_school_holiday_cal}"
+                        else
+                            color="${color_school_holiday_cal_parent}"
+                        fi
+                    elif [[ $status == "0" && ${defaults["categories[0][show]"]} -eq 1 ]]; then
+                        color="${color_resolved_cal}"
+                    else
+                        # If no status is matched, default to future date color
+                        color=""
+                    fi
+                fi
             else
-                color="${color_today}"
+                # No deadline for this date – use today or future date color accordingly.
+                if [[ "$TODAY" == "$year/$month_zero/$d_zero" ]]; then
+                    color="${color_today}"
+                else
+                    color=""
+                fi
             fi
         fi
         printf -v l1 "%s${color}%-2s${reset} " "$l1" "$a"

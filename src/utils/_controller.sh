@@ -718,22 +718,44 @@ process_overdues() {
 
 # NOTE: argument 1 format: YYYY/MM/DD
 extract_status() {
-    # Prioritize the display of event for a certain date in calendar
-    # useful in case there are multiple events in a single day
-    local found=0
-    local date_pattern="^$year/$month_zero/$d_zero [0-9] "
+    # DEBUG: show pattern being matched
+    [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG (extract_status): Searching for deadlines with pattern '^$year/$month_zero/$d_zero '"
+
+    local date_pattern="^$year/$month_zero/$d_zero "
     status="none"
+    end_date=""
+    local best_priority=100
+    local current_priority
 
     for line in "${deadlines[@]}"; do
-        if [[ $line =~ $date_pattern* ]]; then
-            status=${line:11:1}
-            case $status in
-                "1") found=0; break ;;
-                "5") found=1 ;;
+        if [[ $line =~ $date_pattern ]]; then
+            # Extract candidate status from the matching line (assumes status is at position 11)
+            local candidate=${line:11:1}
+
+            # Define priority: lower value means higher priority.
+            case $candidate in
+                1) current_priority=1 ;;  # Highest priority
+                3) current_priority=2 ;;  # Next priority
+                5) current_priority=3 ;;
+                2) current_priority=4 ;;
+                4) current_priority=5 ;;
+                6) current_priority=6 ;;
+                7) current_priority=7 ;;
+                8) current_priority=8 ;;  # Lowest priority among known statuses
+                *) current_priority=99 ;; # Lowest priority overall
             esac
+
+            [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG (extract_status): Matched line: '$line', candidate=$candidate, current_priority=$current_priority, best_priority=$best_priority"
+
+            if (( current_priority < best_priority )); then
+                best_priority=$current_priority
+                status=$candidate
+                end_date="${line:0:10}"
+                [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG (extract_status): New best: end_date=$end_date, status=$status, best_priority=$best_priority"
+            fi
         fi
     done
-    [[ $found -eq 1 ]] && status="5"
+    [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG (extract_status): Final: end_date=$end_date, status=$status"
 }
 
 
