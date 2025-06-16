@@ -301,21 +301,27 @@ dcal() {
             if [[ -n $end_date && "$end_date" == "$year/$month_zero/$d_zero" ]]; then
                 # A deadline exists for the current day – select color based on its status.
                 if [[ "$weekend_days" == *"$a"* ]]; then
-                    [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: In weekend branch for deadline on $d_zero ($a)"
                     if [[ $status == "1" && ${defaults["categories[1][show]"]} -eq 1 ]]; then
+                        [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: In weekend branch for deadline on $d_zero ($a)"
                         color=$(get_bg_color "${color_deadline_cal}")
                     elif [[ $status == "5" && ${defaults["categories[5][show]"]} -eq 1 ]]; then
+                        [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: In weekend branch for public holiday on $d_zero ($a)"
                         color="${color_public_holiday_cal}"
                         multi_event_day="$d_zero"
                     elif [[ $status == "2" && ${defaults["categories[2][show]"]} -eq 1 ]]; then
+                        [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: In weekend branch for work on $d_zero ($a)"
                         color=$(get_bg_color "${color_work_cal}")
                     elif [[ $status == "3" && ${defaults["categories[3][show]"]} -eq 1 ]]; then
+                        [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: In weekend branch for personal on $d_zero ($a)"
                         color=$(get_bg_color "${color_personal_cal}")
                     elif [[ $status == "4" && ${defaults["categories[4][show]"]} -eq 1 ]]; then
+                        [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: In weekend branch for birthday on $d_zero ($a)"
                         color=$(get_bg_color "${color_birthday_cal}")
                     elif [[ $status == "0" && ${defaults["categories[0][show]"]} -eq 1 ]]; then
+                        [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: In weekend branch for resolved deadline on $d_zero ($a)"
                         color=$(get_bg_color "${color_resolved_cal}")
                     else
+                        [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: In weekend branch for regular weekend on $d_zero ($a)"
                         color="${color_weekends}"
                     fi
                 else
@@ -347,11 +353,22 @@ dcal() {
                     fi
                 fi
             else
-                # No deadline for this date – use today or future date color accordingly.
-                if [[ "$TODAY" == "$year/$month_zero/$d_zero" ]]; then
-                    color="${color_today}"
+                # No deadline for this date.
+                if [[ $display_month -eq 1 ]]; then
+                    # For static views (previous month), assign weekend color if the day is Saturday or Sunday,
+                    # otherwise use the future date color.
+                    if [[ "$weekend_days" == *"$a"* ]]; then
+                        color="${color_weekends}"
+                    else
+                        color=""
+                    fi
                 else
-                    color=""
+                    # For the current month, check whether this day is today.
+                    if [[ "$TODAY" == "$year/$month_zero/$d_zero" ]]; then
+                        color="${color_today}"
+                    else
+                        color=""
+                    fi
                 fi
             fi
         fi

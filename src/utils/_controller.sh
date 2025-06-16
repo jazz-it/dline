@@ -723,7 +723,7 @@ extract_status() {
 
     local date_pattern="^$year/$month_zero/$d_zero "
     status="none"
-    end_date=""
+    end_date="$year/$month_zero/$d_zero "
     local best_priority=100
     local current_priority
 
@@ -734,6 +734,7 @@ extract_status() {
 
             # Define priority: lower value means higher priority.
             case $candidate in
+                0) current_priority=1 ;;  # Highest priority
                 1) current_priority=1 ;;  # Highest priority
                 3) current_priority=2 ;;  # Next priority
                 5) current_priority=3 ;;
