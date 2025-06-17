@@ -171,7 +171,7 @@ mode=""
 
 # Global variable to store all expired events
 lines=""
-# Regular expression for date validation (format: YYYY-MM-DD)
+# Regular expression for date validation (format: YYYY/MM/DD)
 date_regex="^[0-9]{4}/[0-9]{2}/[0-9]{2}$"
 
 source ${SCRIPTPATH}/${UTILS}/_model.sh
