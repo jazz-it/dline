@@ -723,7 +723,7 @@ extract_status() {
 
     local date_pattern="^$year/$month_zero/$d_zero "
     status="none"
-    end_date="$year/$month_zero/$d_zero "
+    end_date="$year/$month_zero/$d_zero"
     local best_priority=100
     local current_priority
 

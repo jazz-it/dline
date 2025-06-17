@@ -299,7 +299,7 @@ dcal() {
             [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: end_date=$end_date, status=$status, d_zero=$d_zero"
 
             if [[ -n $end_date && "$end_date" == "$year/$month_zero/$d_zero" ]]; then
-                # A deadline exists for the current day – select color based on its status.
+                # A calendar entry exists for the current day – select color based on its status.
                 if [[ "$weekend_days" == *"$a"* ]]; then
                     if [[ $status == "1" && ${defaults["categories[1][show]"]} -eq 1 ]]; then
                         [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: In weekend branch for deadline on $d_zero ($a)"
@@ -353,22 +353,21 @@ dcal() {
                     fi
                 fi
             else
-                # No deadline for this date.
-                if [[ $display_month -eq 1 ]]; then
+                # No calendar entries for this date.
+                if [[ -z $color ]]; then
                     # For static views (previous month), assign weekend color if the day is Saturday or Sunday,
                     # otherwise use the future date color.
                     if [[ "$weekend_days" == *"$a"* ]]; then
                         color="${color_weekends}"
-                    else
-                        color=""
                     fi
-                else
-                    # For the current month, check whether this day is today.
-                    if [[ "$TODAY" == "$year/$month_zero/$d_zero" ]]; then
-                        color="${color_today}"
-                    else
-                        color=""
-                    fi
+                fi
+            fi
+            if [[ $display_month -ne 1 ]]; then
+                # For the current month, check whether this day is today.
+                [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: Testing today..."
+                if [[ "$year/$month_zero/$day_zero" == "$year/$month_zero/$d_zero" ]]; then
+                    [ "${DEBUG:-0}" -eq 1 ] && echo "DEBUG: [$year/$month_zero/$d_zero] Today found!"
+                    color="${color_today}"
                 fi
             fi
         fi
